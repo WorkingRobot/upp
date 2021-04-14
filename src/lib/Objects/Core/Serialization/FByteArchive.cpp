@@ -1,10 +1,11 @@
 #include "FByteArchive.h"
 
-namespace upp::Readers {
-    FByteArchive::FByteArchive(std::unique_ptr<char[]>&& Data, size_t DataSize, Versions::EGame Game, const std::string& Name) :
-        FArchive(Game, Name),
+namespace upp::Objects {
+    FByteArchive::FByteArchive(std::unique_ptr<char[]>&& Data, size_t DataSize, const std::string& Name) :
+        FArchive(Name),
         Data(std::move(Data)),
-        DataSize(DataSize)
+        DataSize(DataSize),
+        Position(0)
     {
     }
 
@@ -28,15 +29,15 @@ namespace upp::Readers {
         return Position;
     }
 
-    size_t FByteArchive::Seek(ptrdiff_t Offset, SeekDir Direction)
+    size_t FByteArchive::Seek(ptrdiff_t Offset, ESeekDir Direction)
     {
         switch (Direction)
         {
-        case SeekDir::Beg:
+        case ESeekDir::Beg:
             return Position = Offset;
-        case SeekDir::Cur:
+        case ESeekDir::Cur:
             return Position += Offset;
-        case SeekDir::End:
+        case ESeekDir::End:
             return Position = DataSize + Offset;
         default:
             return Position;

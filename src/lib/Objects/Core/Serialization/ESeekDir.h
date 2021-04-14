@@ -2,8 +2,8 @@
 
 #include <stdint.h>
 
-namespace upp::Readers {
-    enum class SeekDir : uint8_t {
+namespace upp::Objects {
+    enum class ESeekDir : uint8_t {
         Beg,
         Cur,
         End

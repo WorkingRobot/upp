@@ -10,8 +10,8 @@ namespace upp::Objects {
 
     FAESSchedule::FAESSchedule(const FAESKey& Key)
     {
-        __m128i EncStep1 = _mm_loadu_si128((const __m128i*) Key.Key);
-        __m128i EncStep2 = _mm_loadu_si128((const __m128i*) (Key.Key + 16));
+        __m128i EncStep1 = _mm256_extractf128_si256(Key.Key, 0);
+        __m128i EncStep2 = _mm256_extractf128_si256(Key.Key, 1);
 
 #define KEYEXP128_H(K1, K2, I, S) _mm_xor_si128(aes128_keyexpand(K1), _mm_shuffle_epi32(_mm_aeskeygenassist_si128(K2, I), S))
 #define KEYEXP256(K1, K2, I) KEYEXP128_H(K1, K2, I, 0xFF)
@@ -37,5 +37,10 @@ namespace upp::Objects {
 #undef KEYEXP256
 #undef KEYEXP256_2
 #undef KEYEXP128_H
+    }
+
+    bool FAESSchedule::IsValid() const
+    {
+        return !_mm_testz_si128(Key, Key);
     }
 }

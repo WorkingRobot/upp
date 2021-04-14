@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../Versions/EGame.h"
-#include "SeekDirection.h"
+#include "ESeekDir.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
-namespace upp::Readers {
+namespace upp::Objects {
     class FArchive {
         // Impl functions
     public:
@@ -16,34 +16,15 @@ namespace upp::Readers {
 
         virtual size_t Tell() const = 0;
 
-        virtual size_t Seek(ptrdiff_t Offset, SeekDir Direction) = 0;
-
-        // Defined errors
-    public:
-        enum class Error : uint32_t {
-            None,
-            FileDoesNotExist,
-            CannotSeek,
-            InvalidMagic,
-            UnsupportedFrozenIndex
-        };
+        virtual size_t Seek(ptrdiff_t Offset, ESeekDir Direction) = 0;
 
         // Public functions
     public:
-        bool HasError() const;
-
-        Error GetError() const;
-
-        void SetError(Error NewError);
-
-        void ClearError();
-
-        Versions::EGame GetGame() const;
-
         const std::string& GetName() const;
 
         // Stream operations
     public:
+        // When porting code, remember that bools are actually 4 bytes, not 1 (in UE)
         FArchive& operator>>(bool& Val) {
             Read((char*)&Val, sizeof(Val));
             return *this;
@@ -104,6 +85,40 @@ namespace upp::Readers {
             return *this;
         }
 
+        FArchive& operator>>(std::string& Val) {
+            // > 0 for ANSICHAR, < 0 for UCS2CHAR serialization
+            int SaveNum;
+            *this >> SaveNum;
+
+            bool LoadUCS2Char = SaveNum < 0;
+
+            if (SaveNum < 0) {
+                // If SaveNum cannot be negated due to integer overflow, Ar is corrupted.
+                if (SaveNum == INT_MIN) {
+                    return *this;
+                }
+
+                SaveNum = -SaveNum;
+            }
+
+            if (SaveNum == 0) {
+                Val.clear();
+                return *this; // blank
+            }
+
+            if (LoadUCS2Char) {
+                auto StringData = std::make_unique<char16_t[]>(SaveNum);
+                Read((char*)StringData.get(), SaveNum * sizeof(char16_t));
+                Val = { StringData.get(), StringData.get() + SaveNum };
+            }
+            else {
+                Val.resize(SaveNum - 1);
+                Read(Val.data(), SaveNum);
+            }
+
+            return *this;
+        }
+
         template<class T>
         FArchive& operator>>(T& Val) {
             Read((char*)&Val, sizeof(std::underlying_type_t<T>));
@@ -136,12 +151,19 @@ namespace upp::Readers {
             return *this;
         }
 
+        // More optimized version of std::vector<char> in a more useful container
+        FArchive& operator>>(std::unique_ptr<char[]>& Val) {
+            int SerializeNum;
+            *this >> SerializeNum;
+            Val = std::make_unique<char[]>(SerializeNum);
+            Read(Val.get(), SerializeNum);
+            return *this;
+        }
+
     protected:
-        FArchive(Versions::EGame Game, const std::string& Name);
+        FArchive(const std::string& Name);
 
     private:
-        Versions::EGame Game;
         std::string Name;
-        Error StoredError;
     };
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../../Readers/FArchive.h"
+#include "../Serialization/FArchive.h"
 
 namespace upp::Objects {
 	struct FGuid {
@@ -21,13 +21,13 @@ namespace upp::Objects {
 
 		}
 
-		friend Readers::FArchive& operator>>(Readers::FArchive& InputStream, FGuid& Value) {
-			InputStream >> Value.A;
-			InputStream >> Value.B;
-			InputStream >> Value.C;
-			InputStream >> Value.D;
+		friend FArchive& operator>>(FArchive& Ar, FGuid& Value) {
+			Ar >> Value.A;
+			Ar >> Value.B;
+			Ar >> Value.C;
+			Ar >> Value.D;
 
-			return InputStream;
+			return Ar;
 		}
 		
 		void Invalidate() {

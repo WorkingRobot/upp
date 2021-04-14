@@ -1,21 +1,22 @@
 #pragma once
 
-#include "../../../Readers/FArchive.h"
+#include "../Serialization/FArchive.h"
+
+#include <immintrin.h>
 
 namespace upp::Objects {
 	struct FAESKey {
-		char Key[32];
+		__m256i Key;
+		
+		friend FArchive& operator>>(FArchive& Ar, FAESKey& Value) {
+			Ar >> Value.Key.m256i_u8;
 
-		friend Readers::FArchive& operator>>(Readers::FArchive& InputStream, FAESKey& Value) {
-			InputStream >> Value.Key;
-
-			return InputStream;
+			return Ar;
 		}
 
 		bool IsValid() const
 		{
-			// https://stackoverflow.com/questions/1493936#comment1346424_1493988
-			return Key[0] == 0 && !memcmp(Key, Key + 1, sizeof(Key) - 1);
+			return !_mm256_testz_si256(Key, Key);
 		}
 	};
 }

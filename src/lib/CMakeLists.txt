@@ -17,7 +17,11 @@ add_library(upp_lib ${upp_lib_SOURCES})
 
 ## Dependencies ##
 
-# None yet #
+find_library(MBEDTLS_LIBRARY mbedtls REQUIRED)
+get_filename_component(MBEDTLS_LIBRARY ${MBEDTLS_LIBRARY} DIRECTORY)
+find_path(MBEDTLS_INCLUDE_DIR mbedtls/version.h REQUIRED)
+target_link_libraries(upp_lib ${MBEDTLS_LIBRARY}/mbedcrypto.lib)
+target_include_directories(upp_lib SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIR})
 
 
 ## Properties ##

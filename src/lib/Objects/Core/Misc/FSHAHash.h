@@ -1,15 +1,15 @@
 #pragma once
 
-#include "../../../Readers/FArchive.h"
+#include "../Serialization/FArchive.h"
 
 namespace upp::Objects {
 	struct FSHAHash {
 		char Hash[20];
 
-		friend Readers::FArchive& operator>>(Readers::FArchive& InputStream, FSHAHash& Value) {
-			InputStream >> Value.Hash;
+		friend FArchive& operator>>(FArchive& Ar, FSHAHash& Value);
 
-			return InputStream;
-		}
+		static FSHAHash HashBuffer(const char* Buffer, size_t BufferSize);
+
+		bool VerifyBuffer(const char* Buffer, size_t BufferSize) const;
 	};
 }

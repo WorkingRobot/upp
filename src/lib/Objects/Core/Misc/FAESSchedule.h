@@ -7,7 +7,11 @@
 namespace upp::Objects {
     class FAESSchedule {
     public:
+        FAESSchedule() = default;
+
         FAESSchedule(const FAESKey& Key);
+
+        bool IsValid() const;
 
         __forceinline void Decrypt(const char Input[16], char Output[16]) const
         {

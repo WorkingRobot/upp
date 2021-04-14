@@ -4,10 +4,10 @@
 
 #include <memory>
 
-namespace upp::Readers {
+namespace upp::Objects {
     class FByteArchive : public FArchive {
     public:
-        FByteArchive(std::unique_ptr<char[]>&& Data, size_t DataSize, Versions::EGame Game, const std::string& Name);
+        FByteArchive(std::unique_ptr<char[]>&& Data, size_t DataSize, const std::string& Name);
 
         size_t Read(char* Data, size_t Size) override;
 
@@ -15,7 +15,7 @@ namespace upp::Readers {
 
         size_t Tell() const override;
 
-        size_t Seek(ptrdiff_t Offset, SeekDir Direction) override;
+        size_t Seek(ptrdiff_t Offset, ESeekDir Direction) override;
 
     private:
         std::unique_ptr<char[]> Data;

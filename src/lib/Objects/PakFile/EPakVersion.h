@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-namespace upp::Pak {
+namespace upp::Objects {
     enum class EPakVersion : int32_t {
         Initial = 1,
 		NoTimestamps = 2,

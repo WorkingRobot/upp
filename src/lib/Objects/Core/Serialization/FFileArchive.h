@@ -5,10 +5,12 @@
 #include <filesystem>
 #include <stdio.h>
 
-namespace upp::Readers {
+namespace upp::Objects {
     class FFileArchive : public FArchive {
     public:
-        FFileArchive(const std::filesystem::path& Path, Versions::EGame Game = Versions::EGame::UE4_Latest);
+        FFileArchive(const std::filesystem::path& Path);
+
+        bool IsValid() const;
 
         size_t Read(char* Data, size_t Size) override;
 
@@ -16,7 +18,7 @@ namespace upp::Readers {
 
         size_t Tell() const override;
 
-        size_t Seek(ptrdiff_t Offset, SeekDir Direction) override;
+        size_t Seek(ptrdiff_t Offset, ESeekDir Direction) override;
 
     private:
         static std::filesystem::path GetPathSafe(const std::filesystem::path& Path);

@@ -1,13 +1,15 @@
 #include "FFileArchive.h"
 
-namespace upp::Readers {
-    FFileArchive::FFileArchive(const std::filesystem::path& Path, Versions::EGame Game) :
-        FArchive(Game, GetPathSafe(Path).string())
+namespace upp::Objects {
+    FFileArchive::FFileArchive(const std::filesystem::path& Path) :
+        FArchive(GetPathSafe(Path).string())
     {
         File = fopen(Path.string().c_str(), "rb");
-        if (!File) {
-            SetError(Error::FileDoesNotExist);
-        }
+    }
+
+    bool FFileArchive::IsValid() const
+    {
+        return File != nullptr;
     }
 
     size_t FFileArchive::Read(char* Data, size_t Size)
@@ -18,8 +20,8 @@ namespace upp::Readers {
     size_t FFileArchive::Size() const
     {
         auto Pos = Tell();
-        auto Ret = ((FFileArchive*)this)->Seek(0, SeekDir::End);
-        ((FFileArchive*)this)->Seek(Pos, SeekDir::Beg);
+        auto Ret = ((FFileArchive*)this)->Seek(0, ESeekDir::End);
+        ((FFileArchive*)this)->Seek(Pos, ESeekDir::Beg);
         return Ret;
     }
 
@@ -28,10 +30,10 @@ namespace upp::Readers {
         return _ftelli64(File);
     }
 
-    size_t FFileArchive::Seek(ptrdiff_t Offset, SeekDir Direction)
+    size_t FFileArchive::Seek(ptrdiff_t Offset, ESeekDir Direction)
     {
         if (_fseeki64(File, Offset, (int)Direction)) {
-            SetError(Error::CannotSeek);
+            // Could not seek
         }
         return Tell();
     }
