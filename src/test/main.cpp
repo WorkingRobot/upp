@@ -40,7 +40,8 @@ int main() {
     upp::Objects::FFileArchive Ar(R"(J:\Code\Visual Studio 2017\Projects\FortniteDownloader\DownloaderApp2\bin\Debug\netcoreapp3.1\FortniteGame\Content\Paks\pakchunk0-WindowsClient.pak)");
     upp::Vfs::Vfs Vfs;
     upp::Readers::Error Error;
-    auto Reader = Vfs.AddReaderIfValid<upp::Readers::PakReader>(Ar, KeyChainImpl(), Error);
+    KeyChainImpl KeyChain;
+    auto Reader = Vfs.AddReaderIfValid<upp::Readers::PakReader>(Ar, KeyChain, Error);
     if (!Reader) {
         printf("Error: %d\n", Error);
         return 0;
