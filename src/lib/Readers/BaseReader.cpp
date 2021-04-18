@@ -6,15 +6,15 @@ namespace upp::Readers {
     BaseReader::BaseReader(Objects::FArchive& Archive, const IKeyChain& KeyChain, uint32_t ReaderIdx) :
         Ar(Archive),
         KeyChain(KeyChain),
-        ReaderIdx(ReaderIdx == -1 ? GenerateReaderIdx() : ReaderIdx),
-        StoredError(Error::None)
+        StoredError(Error::None),
+        ReaderIdx(ReaderIdx)
     {
 
     }
 
     bool BaseReader::HasError() const
     {
-        return StoredError == Error::None;
+        return StoredError != Error::None;
     }
 
     Error BaseReader::GetError() const
@@ -25,6 +25,11 @@ namespace upp::Readers {
     uint32_t BaseReader::GetReaderIdx() const
     {
         return ReaderIdx;
+    }
+
+    const Objects::FArchive& BaseReader::GetArchive() const
+    {
+        return Ar;
     }
 
     void BaseReader::SetError(Error NewError)
@@ -66,21 +71,17 @@ namespace upp::Readers {
         }
         else {
             auto SepPos = Path.find('/', 1);
-            if (SepPos == std::string::npos)
+            if (SepPos == std::string::npos) {
                 return;
-            if (Path.compare(SepPos, 9, "/Content/") != 0)
+            }
+            if (Path.compare(SepPos, 9, "/Content/") != 0) {
                 return;
+            }
 
             if (SepPos > 4) {
                 // /FortniteGame/Content -> /Game
                 Path.replace(1, SepPos + 7, "Game");
             }
         }
-    }
-
-    uint32_t BaseReader::GenerateReaderIdx()
-    {
-        static std::atomic<uint32_t> Idx(0);
-        return ++Idx;
     }
 }

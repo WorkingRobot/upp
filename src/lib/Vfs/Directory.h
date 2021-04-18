@@ -10,10 +10,11 @@ namespace upp::Vfs {
     public:
         static constexpr char SepChar = '/';
 
+        template<bool CheckIfAlreadyExists>
         void MergeDirectory(Directory&& Other) {
-            Files.Merge<true>(std::move(Other.Files));
+            Files.Merge<CheckIfAlreadyExists>(std::move(Other.Files));
             for (auto& Dir : Other.Directories) {
-                CreateDirectory<true>(Dir.first.GetString(), Dir.first.GetSize()).MergeDirectory(std::move(Dir.second));
+                CreateDirectory<CheckIfAlreadyExists>(Dir.first.GetString(), Dir.first.GetSize()).template MergeDirectory<CheckIfAlreadyExists>(std::move(Dir.second));
             }
         }
 
@@ -49,12 +50,12 @@ namespace upp::Vfs {
             return Files.emplace_back<CheckIfAlreadyExists>(FileName, NameSize, std::move(NewFile));
         }
 
-        const File* TryGetPackage(const char* Path) const {
+        const File* TryGetFile(const char* Path) const {
             const char* Separator = strchr(Path, SepChar);
             if (Separator) {
                 auto ChildIter = Directories.SearchValues(Path, Separator - Path);
                 if (ChildIter != Directories.end()) {
-                    return ChildIter->second.TryGetPackage(Separator + 1);
+                    return ChildIter->second.TryGetFile(Separator + 1);
                 }
             }
             else {

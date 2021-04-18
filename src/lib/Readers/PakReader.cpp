@@ -2,6 +2,9 @@
 
 #include "../Objects/Core/Serialization/FByteArchive.h"
 #include "../Objects/PakFile/FPakEntryLocation.h"
+#include "../Objects/PakFile/FPakArchive.h"
+#include "../Vfs/Vfs.h"
+#include "../Align.h"
 
 namespace upp::Readers {
     using namespace Objects;
@@ -45,11 +48,59 @@ namespace upp::Readers {
         }
     }
 
-    void PakReader::Append(Vfs::BaseVfs& Vfs)
+    const FPakInfo& PakReader::GetPakInfo() const
+    {
+        return Info;
+    }
+
+    CompressionMethod PakReader::GetCompressionMethod(uint32_t CompressionMethodIdx) const
+    {
+        if (CompressionMethodIdx > Info.CompressionMethods.size()) {
+            // Invalid idx
+            return CompressionMethod::None;
+        }
+
+        switch (Crc32<true>(Info.CompressionMethods[CompressionMethodIdx])) {
+        case Crc32<true>("None"):
+            return CompressionMethod::None;
+        case Crc32<true>("Zlib"):
+            return CompressionMethod::Zlib;
+        case Crc32<true>("Gzip"):
+            return CompressionMethod::Gzip;
+        case Crc32<true>("Oodle"):
+            return CompressionMethod::Oodle;
+        default:
+            // Unknown/unsupported method
+            return CompressionMethod::None;
+        }
+    }
+
+    std::unique_ptr<FArchive> PakReader::OpenFile(uint32_t FileIdx)
+    {
+        if (EntryData.valueless_by_exception()) {
+            return nullptr;
+        }
+        
+        if (auto Data = std::get_if<std::vector<Objects::FPakEntry>>(&EntryData)) {
+            return std::make_unique<FPakArchive>(Data->at(FileIdx), *this);
+        }
+        else {
+            return std::make_unique<FPakArchive>(DecodePakEntry(FileIdx), *this);
+        }
+    }
+
+    void PakReader::Append(Vfs::Vfs& Vfs)
     {
         if (HasError()) {
             return;
         }
+
+        Vfs.GetRootDirectory().MergeDirectory<true>(std::move(Index));
+    }
+
+    const Objects::FAESSchedule& PakReader::GetSchedule() const
+    {
+        return KeyChain.GetKey(Info.EncryptionKeyGuid);
     }
 
     std::unique_ptr<char[]> PakReader::GetIndexArchive(int64_t Offset, int64_t Size, const FSHAHash& Hash)
@@ -59,7 +110,7 @@ namespace upp::Readers {
         Ar.Read(Data.get(), Size);
 
         if (Info.IsEncryptedIndex) {
-            auto& Schedule = KeyChain.GetKey(Info.EncryptionKeyGuid);
+            auto& Schedule = GetSchedule();
             if (!Schedule.IsValid()) {
                 SetError(Error::InvalidAesKey);
                 return {};
@@ -74,6 +125,85 @@ namespace upp::Readers {
         }
 
         return Data;
+    }
+
+    // https://github.com/EpicGames/UnrealEngine/blob/2bf1a5b83a7076a0fd275887b373f8ec9e99d431/Engine/Source/Runtime/PakFile/Private/IPlatformFilePak.cpp#L6020
+    FPakEntry PakReader::DecodePakEntry(uint32_t Offset) const
+    {
+        FPakEntry Entry;
+        char* Ptr = std::get<std::unique_ptr<char[]>>(EntryData).get() + Offset;
+
+        uint32_t Val = *(uint32_t*)Ptr;
+        Ptr += sizeof(uint32_t);
+
+        Entry.CompressionMethodIndex = (Val >> 23) & 0x3F;
+
+        // These bits check if the following field is 32-bit (0 if 64-bit)
+        if (Val & (1 << 31)) {
+            Entry.Offset = *(uint32_t*)Ptr;
+            Ptr += sizeof(uint32_t);
+        }
+        else {
+            Entry.Offset = *(int64_t*)Ptr;
+            Ptr += sizeof(int64_t);
+        }
+
+        if (Val & (1 << 30)) {
+            Entry.UncompressedSize = *(uint32_t*)Ptr;
+            Ptr += sizeof(uint32_t);
+        }
+        else {
+            Entry.UncompressedSize = *(int64_t*)Ptr;
+            Ptr += sizeof(int64_t);
+        }
+
+        if (Entry.CompressionMethodIndex != 0) {
+            // Size is only provided if there is compression
+            if (Val & (1 << 29)) {
+                Entry.Size = *(uint32_t*)Ptr;
+                Ptr += sizeof(uint32_t);
+            }
+            else {
+                Entry.Size = *(int64_t*)Ptr;
+                Ptr += sizeof(int64_t);
+            }
+        }
+        else {
+            Entry.Size = Entry.UncompressedSize;
+        }
+
+        // Encoded entries are never marked as deleted, so only the encrypted flag is valid
+        Entry.Flags = (Val & (1 << 22)) ? EPakEntryFlags::Encrypted : EPakEntryFlags::None;
+
+        uint32_t CompressionBlockCount = (Val >> 6) & 0xFFFF;
+
+        if (CompressionBlockCount == 0) {
+            Entry.CompressionBlockSize = 0;
+        }
+        else {
+            Entry.CompressionBlockSize = Entry.UncompressedSize < 65536 ? (uint32_t)Entry.UncompressedSize : ((Val & 0x3F) << 11);
+
+            Entry.CompressionBlocks.resize(CompressionBlockCount);
+            int64_t BlockOffset = (Info.Version >= EPakVersion::RelativeChunkOffsets ? 0 : Entry.Offset) + Entry.GetSerializedSize(Info.Version);
+            if (CompressionBlockCount == 1 && !Entry.IsEncrypted()) {
+                auto& Block = Entry.CompressionBlocks[0];
+                Block.CompressedStart = BlockOffset;
+                Block.CompressedEnd = BlockOffset + Entry.Size;
+            }
+            else {
+                uint64_t Alignment = Entry.IsEncrypted() ? 16 : 1;
+                uint32_t* BlockSizePtr = (uint32_t*)Ptr;
+                for (auto& Block : Entry.CompressionBlocks) {
+                    Block.CompressedStart = BlockOffset;
+                    Block.CompressedEnd = BlockOffset + *BlockSizePtr;
+
+                    BlockOffset += upp::Align(*BlockSizePtr, Alignment);
+                    ++BlockSizePtr;
+                }
+            }
+        }
+
+        return Entry;
     }
 
     // https://github.com/EpicGames/UnrealEngine/blob/2bf1a5b83a7076a0fd275887b373f8ec9e99d431/Engine/Source/Runtime/PakFile/Private/IPlatformFilePak.cpp#L5117

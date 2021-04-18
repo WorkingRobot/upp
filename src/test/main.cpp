@@ -1,6 +1,6 @@
 #include "../lib/Objects/Core/Serialization/FFileArchive.h"
 #include "../lib/Readers/PakReader.h"
-#include "../lib/Vfs/BaseVfs.h"
+#include "../lib/Vfs/Vfs.h"
 #include "../lib/Vfs/DirectoryIterator.h"
 
 class KeyChainImpl : public upp::IKeyChain {
@@ -37,17 +37,32 @@ void Iterate(const std::string& Path, const upp::Vfs::Directory<upp::Vfs::CStrin
 }
 
 int main() {
-    upp::Objects::FFileArchive Ar(R"(J:\Code\Visual Studio 2017\Projects\FortniteDownloader\DownloaderApp2\bin\Debug\netcoreapp3.1\FortniteGame\Content\Paks\pakChunk0-WindowsClient.pak)");
-    upp::Readers::PakReader Reader(Ar, KeyChainImpl());
-    upp::Vfs::RecursiveDirectoryIterator RItr(Reader.Index);
-    for (upp::Vfs::RecursiveDirectoryIterator RItr(Reader.Index); RItr != upp::Vfs::end(RItr); ++RItr) {
-        auto& Itr = *RItr;
-        printf("%s%s ", std::string(RItr.Depth(), ' ').c_str(), Itr.GetName().GetString());
-        if (Itr.IsDirectory()) {
-            printf("\n");
+    upp::Objects::FFileArchive Ar(R"(J:\Code\Visual Studio 2017\Projects\FortniteDownloader\DownloaderApp2\bin\Debug\netcoreapp3.1\FortniteGame\Content\Paks\pakchunk0-WindowsClient.pak)");
+    upp::Vfs::Vfs Vfs;
+    upp::Readers::Error Error;
+    auto Reader = Vfs.AddReaderIfValid<upp::Readers::PakReader>(Ar, KeyChainImpl(), Error);
+    if (!Reader) {
+        printf("Error: %d\n", Error);
+        return 0;
+    }
+    
+    // Iterate("", Vfs.GetRootDirectory()); return 0;
+
+    for (auto& Entry : upp::Vfs::RecursiveDirectoryIterator(Vfs.GetRootDirectory())) {
+        if (!Entry.IsFile()) {
+            continue;
+        }
+
+        auto ArPtr = Vfs.GetFile(*Entry.GetFile());
+        if (ArPtr) {
+            auto f = fopen((std::to_string(Entry.GetFile()->GetFileIdx()) + ".f").c_str(), "wb");
+            auto buf = std::make_unique<char[]>(ArPtr->Size());
+            ArPtr->Read(buf.get(), ArPtr->Size());
+            fwrite(buf.get(), 1, ArPtr->Size(), f);
+            fclose(f);
         }
         else {
-            printf("%u - %u\n", Itr.GetFile()->GetReaderIdx(), Itr.GetFile()->GetFileIdx());
+            printf("Could not open %u\n", Entry.GetFile()->GetFileIdx());
         }
     }
 }

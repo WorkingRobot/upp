@@ -17,11 +17,20 @@ add_library(upp_lib ${upp_lib_SOURCES})
 
 ## Dependencies ##
 
+# Mbedtls (for SHA hash stuff)
 find_library(MBEDTLS_LIBRARY mbedtls REQUIRED)
 get_filename_component(MBEDTLS_LIBRARY ${MBEDTLS_LIBRARY} DIRECTORY)
 find_path(MBEDTLS_INCLUDE_DIR mbedtls/version.h REQUIRED)
 target_link_libraries(upp_lib ${MBEDTLS_LIBRARY}/mbedcrypto.lib)
 target_include_directories(upp_lib SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIR})
+
+# libdeflate (for zlib/gzip decompression)
+target_link_libraries(upp_lib "${CMAKE_SOURCE_DIR}/deps/libdeflate/libdeflatestatic.lib")
+target_include_directories(upp_lib SYSTEM PRIVATE "${CMAKE_SOURCE_DIR}/deps/libdeflate")
+
+# Oodle (for oodle decompression)
+target_link_libraries(upp_lib "${CMAKE_SOURCE_DIR}/deps/oodle/oo2core_8_win64.lib")
+target_include_directories(upp_lib SYSTEM PRIVATE "${CMAKE_SOURCE_DIR}/deps/oodle")
 
 
 ## Properties ##

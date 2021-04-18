@@ -2,21 +2,28 @@
 
 #include "../IKeyChain.h"
 #include "../Objects/Core/Serialization/FArchive.h"
-#include "../Vfs/BaseVfs.h"
 #include "Error.h"
+
+namespace upp::Vfs {
+    class Vfs;
+}
 
 namespace upp::Readers {
     class BaseReader {
     public:
         BaseReader(Objects::FArchive& Archive, const IKeyChain& KeyChain, uint32_t ReaderIdx = -1);
 
-        virtual void Append(Vfs::BaseVfs& Vfs) = 0;
-
         bool HasError() const;
 
         Error GetError() const;
 
         uint32_t GetReaderIdx() const;
+
+        const Objects::FArchive& GetArchive() const;
+
+        virtual std::unique_ptr<Objects::FArchive> OpenFile(uint32_t FileIdx) = 0;
+
+        virtual void Append(Vfs::Vfs& Vfs) = 0;
 
     protected:
         void SetError(Error NewError);
@@ -27,11 +34,9 @@ namespace upp::Readers {
 
         Objects::FArchive& Ar;
         const IKeyChain& KeyChain;
-        uint32_t ReaderIdx;
 
     private:
         Error StoredError;
-
-        static uint32_t GenerateReaderIdx();
+        uint32_t ReaderIdx;
     };
 }

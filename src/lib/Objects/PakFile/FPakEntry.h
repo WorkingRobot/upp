@@ -3,15 +3,12 @@
 #include "../Core/Serialization/FArchive.h"
 #include "../Core/Misc/FGuid.h"
 #include "../Core/Misc/FSHAHash.h"
-#include "EPakVersion.h"
 #include "FPakCompressedBlock.h"
+#include "EPakEntryFlags.h"
+#include "EPakVersion.h"
 
 namespace upp::Objects {
     struct FPakEntry {
-        static constexpr uint32_t FileMagic = 0x5A6F12E1;
-        static constexpr int CompressionMethodNameLen = 32;
-        static constexpr int CompressionMethodMaxCount = 5;
-
         int64_t Offset;
 
         int64_t Size;
@@ -26,9 +23,13 @@ namespace upp::Objects {
 
         uint32_t CompressionMethodIndex;
 
-        uint8_t Flags;
+        EPakEntryFlags Flags;
 
         void Serialize(FArchive& Ar, EPakVersion Version);
+
+        bool IsEncrypted() const {
+            return (uint8_t)Flags & (uint8_t)EPakEntryFlags::Encrypted;
+        }
 
         constexpr size_t GetSerializedSize(EPakVersion Version = EPakVersion::Latest) const {
             size_t Size = sizeof(Offset) + sizeof(Size) + sizeof(UncompressedSize) + sizeof(Hash);
