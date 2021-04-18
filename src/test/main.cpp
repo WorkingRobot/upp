@@ -41,7 +41,7 @@ int main() {
     upp::Vfs::Vfs Vfs;
     upp::Readers::Error Error;
     KeyChainImpl KeyChain;
-    auto Reader = Vfs.AddReaderIfValid<upp::Readers::PakReader>(Ar, KeyChain, Error);
+    auto Reader = Vfs.AddReaderIfValid<upp::Readers::PakReader>(Error, Ar, KeyChain);
     if (!Reader) {
         printf("Error: %d\n", Error);
         return 0;

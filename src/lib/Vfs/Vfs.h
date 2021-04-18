@@ -16,18 +16,18 @@ namespace upp::Vfs {
 
         Directory<>& GetRootDirectory();
 
-        template<typename T, std::enable_if_t<std::is_base_of_v<Readers::BaseReader, T>, bool> = true>
-        T& AddReader(Objects::FArchive& Archive, const IKeyChain& KeyChain) {
-            auto& Ret = Readers.emplace_back(std::make_unique<T>(Archive, KeyChain, NextReaderIdx++));
+        template<typename T, typename... Ts, std::enable_if_t<std::is_base_of_v<Readers::BaseReader, T>, bool> = true>
+        T& AddReader(Ts&&... Args) {
+            auto& Ret = Readers.emplace_back(std::make_unique<T>(std::forward<Ts>(Args)..., NextReaderIdx++));
             if (!Ret->HasError()) {
                 Ret->Append(*this);
             }
             return *(T*)Ret.get();
         }
 
-        template<typename T, std::enable_if_t<std::is_base_of_v<Readers::BaseReader, T>, bool> = true>
-        T* AddReaderIfValid(Objects::FArchive& Archive, const IKeyChain& KeyChain, Readers::Error& Error) {
-            auto& Ret = Readers.emplace_back(std::make_unique<T>(Archive, KeyChain, NextReaderIdx++));
+        template<typename T, typename... Ts, std::enable_if_t<std::is_base_of_v<Readers::BaseReader, T>, bool> = true>
+        T* AddReaderIfValid(Readers::Error& Error, Ts&&... Args) {
+            auto& Ret = Readers.emplace_back(std::make_unique<T>(std::forward<Ts>(Args)..., NextReaderIdx++));
             Error = Ret->GetError();
             if (Ret->HasError()) {
                 Readers.pop_back();
