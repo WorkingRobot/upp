@@ -11,7 +11,7 @@ namespace upp::Objects {
 
     size_t FByteArchive::Read(char* Data, size_t Size)
     {
-        if (Position + Size > DataSize) {
+        if (Position + Size > DataSize) [[unlikely]] {
             Size = DataSize - Tell();
         }
         memcpy(Data, this->Data.get() + Tell(), Size);

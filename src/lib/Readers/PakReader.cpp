@@ -275,14 +275,14 @@ namespace upp::Readers {
         std::vector<std::pair<std::string, std::vector<std::pair<std::string, FPakEntryLocation>>>> DirIdx;
         FullDirectoryIndexAr >> DirIdx;
 
-        auto& MountDir = Index.CreateDirectories<true>(MountPoint.c_str() + 1);
+        auto& MountDir = Index.CreateDirectories<false>(MountPoint.c_str() + 1);
         for (auto& Dir : DirIdx) {
             if (Dir.second.empty()) {
                 continue;
             }
             auto& VfsDir = MountDir.CreateDirectories<true>(Dir.first.c_str());
             for (auto& File : Dir.second) {
-                VfsDir.CreateFileAtPath<true>(File.first.c_str(), Vfs::File(GetReaderIdx(), File.second.Index));
+                VfsDir.CreateFile<false>(File.first.c_str(), File.first.size(), Vfs::File(GetReaderIdx(), File.second.Index));
             }
         }
     }

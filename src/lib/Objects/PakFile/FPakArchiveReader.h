@@ -177,19 +177,17 @@ namespace upp::Objects {
                     memcpy(Data, CachedBlockBuffer.get() + BlockCopyStart, BlockCopyCount);
                 }
                 else {
+                    int64_t EncryptionSize = EncryptionImpl::Align(CompressedBlockSize);
                     Ar.Seek(Block.CompressedStart + (PakFile.GetPakInfo().Version >= EPakVersion::RelativeChunkOffsets ? Entry.Offset : 0), ESeekDir::Beg);
-                    Ar.Read(CompBuffer.get(), EncryptionImpl::Align(CompressedBlockSize));
+                    Ar.Read(CompBuffer.get(), EncryptionSize);
 
+                    EncryptionImpl::DecryptBlock(CompBuffer.get(), EncryptionSize, GetSchedule());
                     if (BlockCopyStart == 0 && Size >= Entry.CompressionBlockSize) {
-                        int64_t EncryptionSize = EncryptionImpl::Align(CompressedBlockSize);
-                        EncryptionImpl::DecryptBlock(CompBuffer.get(), EncryptionSize, GetSchedule());
                         Compression::Decompress(Method, CompBuffer.get(), CompressedBlockSize, Data, UncompressedBlockSize);
 
                         CachedBlockIdx = 0xFFFFFFFF;
                     }
                     else {
-                        int64_t EncryptionSize = EncryptionImpl::Align(CompressedBlockSize);
-                        EncryptionImpl::DecryptBlock(CompBuffer.get(), EncryptionSize, GetSchedule());
                         Compression::Decompress(Method, CompBuffer.get(), CompressedBlockSize, CachedBlockBuffer.get(), UncompressedBlockSize);
                         memcpy(Data, CachedBlockBuffer.get() + BlockCopyStart, BlockCopyCount);
 

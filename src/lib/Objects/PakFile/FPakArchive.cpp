@@ -25,8 +25,8 @@ namespace upp::Objects {
 
     size_t FPakArchive::Read(char* Data, size_t Size)
     {
-        if (Position + Size > Impl->Size()) {
-            Size = Impl->Size() - Position;
+        if (Position + Size > this->Size()) [[unlikely]] {
+            Size = this->Size() - Position;
         }
         Impl->Read(Data, Size, Position);
         Position += Size;
