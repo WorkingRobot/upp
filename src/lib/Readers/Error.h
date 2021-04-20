@@ -9,6 +9,7 @@ namespace upp::Readers {
         UnsupportedFrozenIndex,
         InvalidAesKey,
         InvalidIndexHash,
-        MissingFullDirectoryIndex
+        MissingFullDirectoryIndex,
+        InvalidTocHeader
     };
 }
