@@ -21,6 +21,12 @@ namespace upp::Objects {
 
 		}
 
+		constexpr FGuid(uint32_t Val) :
+			FGuid(Val, Val, Val, Val)
+		{
+
+		}
+
 		friend FArchive& operator>>(FArchive& Ar, FGuid& Value) {
 			Ar >> Value.A;
 			Ar >> Value.B;
@@ -29,12 +35,15 @@ namespace upp::Objects {
 
 			return Ar;
 		}
+
+		constexpr bool IsValid() const {
+			return FGuid() != *this;
+		}
 		
 		void Invalidate() {
-			A = 0;
-			B = 0;
-			C = 0;
-			D = 0;
+			*this = FGuid();
 		}
+
+		friend auto operator<=>(const FGuid&, const FGuid&) = default;
 	};
 }
