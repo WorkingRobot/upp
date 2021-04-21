@@ -7,6 +7,16 @@ namespace upp::Vfs {
 
     }
 
+    const GlobalData& Vfs::GetGlobalData() const
+    {
+        return Global;
+    }
+
+    GlobalData& Vfs::GetGlobalData()
+    {
+        return Global;
+    }
+
     const Directory<>& Vfs::GetRootDirectory() const
     {
         return Root;

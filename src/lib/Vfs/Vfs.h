@@ -2,15 +2,16 @@
 
 #include "../Readers/BaseReader.h"
 #include "Directory.h"
+#include "GlobalData.h"
 
 namespace upp::Vfs {
     class Vfs {
     public:
         Vfs();
 
-        //const GlobalData& GetGlobalData() const;
+        const GlobalData& GetGlobalData() const;
 
-        //GlobalData& GetGlobalData();
+        GlobalData& GetGlobalData();
 
         const Directory<>& GetRootDirectory() const;
 
@@ -50,6 +51,7 @@ namespace upp::Vfs {
 
     private:
         Directory<> Root;
+        GlobalData Global;
         std::vector<std::unique_ptr<Readers::BaseReader>> Readers;
         uint32_t NextReaderIdx;
     };

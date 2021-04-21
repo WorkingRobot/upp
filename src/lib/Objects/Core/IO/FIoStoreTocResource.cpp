@@ -10,17 +10,9 @@ namespace upp::Objects {
             return;
         }
 
-        static_assert(std::has_unique_object_representations_v<FIoChunkId>, "Ar.Read must be changed to a for loop");
-        ChunkIds.resize(Header.TocEntryCount);
-        Ar.Read((char*)ChunkIds.data(), Header.TocEntryCount * sizeof(FIoChunkId));
-
-        static_assert(std::has_unique_object_representations_v<FIoOffsetAndLength>, "Ar.Read must be changed to a for loop");
-        ChunkOffsetLengths.resize(Header.TocEntryCount);
-        Ar.Read((char*)ChunkOffsetLengths.data(), Header.TocEntryCount * sizeof(FIoOffsetAndLength));
-
-        static_assert(std::has_unique_object_representations_v<FIoStoreTocCompressedBlockEntry>, "Ar.Read must be changed to a for loop");
-        CompressionBlocks.resize(Header.TocCompressedBlockEntryCount);
-        Ar.Read((char*)CompressionBlocks.data(), Header.TocCompressedBlockEntryCount * sizeof(FIoStoreTocCompressedBlockEntry));
+        Ar.ReadBuffer(ChunkIds, Header.TocEntryCount);
+        Ar.ReadBuffer(ChunkOffsetLengths, Header.TocEntryCount);
+        Ar.ReadBuffer(CompressionBlocks, Header.TocCompressedBlockEntryCount);
 
         {
             CompressionMethods.emplace_back("None");
@@ -62,15 +54,12 @@ namespace upp::Objects {
         }
 
         {
-            static_assert(std::has_unique_object_representations_v<FIoStoreTocEntryMeta>, "Ar.Read must be changed to a for loop");
-            ChunkMetas.resize(Header.TocEntryCount);
-            Ar.Read((char*)ChunkMetas.data(), Header.TocEntryCount * sizeof(FIoStoreTocEntryMeta));
+            Ar.ReadBuffer(ChunkMetas, Header.TocEntryCount);
         }
 
         if (Header.Version < EIoStoreTocVersion::PartitionSize) {
             Header.PartitionCount = 1;
             Header.PartitionSize = std::numeric_limits<uint64_t>::max();
         }
-
     }
 }

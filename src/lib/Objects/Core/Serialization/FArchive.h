@@ -140,6 +140,22 @@ namespace upp::Objects {
             return *this;
         }
 
+        // Micro optimization to simply copy into the vector buffer
+        // This is not a specialization of >> std::vector<T> because
+        // it's impossible to know if >> does the same thing as a memcpy
+        template<class T, std::enable_if_t<std::has_unique_object_representations_v<T>, bool> = true>
+        void ReadBuffer(std::vector<T>& Val, size_t ReadCount) {
+            Val.resize(ReadCount);
+            Read((char*)Val.data(), ReadCount * sizeof(T));
+        }
+
+        template<class T, std::enable_if_t<std::has_unique_object_representations_v<T>, bool> = true>
+        void ReadBuffer(std::vector<T>& Val) {
+            int ReadCount;
+            *this >> ReadCount;
+            ReadBuffer(Val, ReadCount);
+        }
+
         template<class T>
         FArchive& operator>>(std::vector<T>& Val) {
             int SerializeNum;

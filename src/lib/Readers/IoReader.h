@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../Objects/CoreUObject/Serialization/FContainerHeader.h"
 #include "../Objects/Core/IO/FIoStoreTocResource.h"
 #include "../Vfs/Directory.h"
 #include "../Compression.h"
@@ -20,6 +21,8 @@ namespace upp::Readers {
 
         CompressionMethod GetCompressionMethod(uint32_t CompressionMethodIdx) const;
 
+        bool GetHeader(Objects::FContainerHeader& OutHeader);
+
         std::unique_ptr<Objects::FArchive> OpenFile(uint32_t FileIdx) override;
 
         void Append(Vfs::Vfs& Vfs) override;
@@ -29,16 +32,20 @@ namespace upp::Readers {
 
         const Objects::FAESSchedule& GetSchedule() const;
 
+        uint32_t GetChunkIdx(const Objects::FIoChunkId& Id) const;
+
         void Append(const Objects::FIoDirectoryIndexResource& Index, Vfs::Directory<>& Tree, uint32_t DirIdx);
 
         Vfs::Directory<> Index;
 
+        Objects::FIoContainerId ContainerId;
         Objects::EIoContainerFlags ContainerFlags;
         uint32_t CompressionBlockSize;
         uint64_t PartitionSize;
         Objects::FGuid EncryptionKeyGuid;
         std::vector<std::string> CompressionMethods;
         std::vector<Objects::FIoOffsetAndLength> ChunkOffsetLengths;
+        std::vector<Objects::FIoChunkId> ChunkIds;
         std::vector<Objects::FIoStoreTocCompressedBlockEntry> CompressionBlocks;
     };
 }

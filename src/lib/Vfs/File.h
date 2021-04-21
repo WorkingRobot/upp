@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 namespace upp::Vfs {
     class File {
     public:

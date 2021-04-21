@@ -57,6 +57,8 @@ int main() {
     upp::Objects::FFileArchive Ar(R"(D:\FortniteGame\Content\Paks\pakchunk0-WindowsClient.ucas)");
     upp::Objects::FFileArchive TocAr1000(R"(D:\FortniteGame\Content\Paks\pakchunk1000-WindowsClient.utoc)");
     upp::Objects::FFileArchive Ar1000(R"(D:\FortniteGame\Content\Paks\pakchunk1000-WindowsClient.ucas)");
+    upp::Objects::FFileArchive TocArGlobal(R"(D:\FortniteGame\Content\Paks\global.utoc)");
+    upp::Objects::FFileArchive ArGlobal(R"(D:\FortniteGame\Content\Paks\global.ucas)");
     upp::Vfs::Vfs Vfs;
     upp::Readers::Error Error;
     KeyChainImpl KeyChain;
@@ -71,6 +73,13 @@ int main() {
         auto Reader = Vfs.AddReaderIfValid<upp::Readers::IoReader>(Error, Ar1000, TocAr1000, KeyChain);
         if (!Reader) {
             printf("Error 1000: %d\n", Error);
+            return 0;
+        }
+    }
+    {
+        auto Reader = Vfs.AddReaderIfValid<upp::Readers::IoReader>(Error, ArGlobal, TocArGlobal, KeyChain);
+        if (!Reader) {
+            printf("Error global: %d\n", Error);
             return 0;
         }
     }
