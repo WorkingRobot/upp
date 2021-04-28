@@ -29,7 +29,7 @@ target_link_libraries(upp_lib "${CMAKE_SOURCE_DIR}/deps/libdeflate/libdeflatesta
 target_include_directories(upp_lib SYSTEM PRIVATE "${CMAKE_SOURCE_DIR}/deps/libdeflate")
 
 # Oodle (for oodle decompression)
-target_link_libraries(upp_lib "${CMAKE_SOURCE_DIR}/deps/oodle/oo2core_8_win64.lib")
+target_link_libraries(upp_lib "${CMAKE_SOURCE_DIR}/deps/oodle/oo2core_win64.lib")
 target_include_directories(upp_lib SYSTEM PRIVATE "${CMAKE_SOURCE_DIR}/deps/oodle")
 
 

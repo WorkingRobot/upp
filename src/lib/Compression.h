@@ -9,7 +9,8 @@ namespace upp {
         Zlib,
         Gzip,
         Oodle,
-        LZ4
+        LZ4,
+        Brotli
     };
 
     namespace Detail {
@@ -42,55 +43,76 @@ namespace upp {
 
     class Compression {
     public:
+        template<CompressionMethod Method>
+        static __forceinline bool IsValid() {
+            return Detail::Compressor<Method>::IsValid();
+        }
+
         static __forceinline bool IsValid(CompressionMethod Method) {
             switch (Method)
             {
             case CompressionMethod::None:
-                return Detail::Compressor<CompressionMethod::None>::IsValid();
+                return IsValid<CompressionMethod::None>();
             case CompressionMethod::Zlib:
-                return Detail::Compressor<CompressionMethod::Zlib>::IsValid();
+                return IsValid<CompressionMethod::Zlib>();
             case CompressionMethod::Gzip:
-                return Detail::Compressor<CompressionMethod::Gzip>::IsValid();
+                return IsValid<CompressionMethod::Gzip>();
             case CompressionMethod::Oodle:
-                return Detail::Compressor<CompressionMethod::Oodle>::IsValid();
+                return IsValid<CompressionMethod::Oodle>();
             case CompressionMethod::LZ4:
-                return Detail::Compressor<CompressionMethod::LZ4>::IsValid();
+                return IsValid<CompressionMethod::LZ4>();
+            case CompressionMethod::Brotli:
+                return IsValid<CompressionMethod::Brotli>();
             default:
-                return 0;
+                return false;
             }
+        }
+
+        template<CompressionMethod Method>
+        static __forceinline int32_t CompressBound(int32_t UncompressedSize) {
+            return Detail::Compressor<Method>::CompressBound(UncompressedSize);
         }
 
         static __forceinline int32_t CompressBound(CompressionMethod Method, int32_t UncompressedSize) {
             switch (Method)
             {
             case CompressionMethod::None:
-                return Detail::Compressor<CompressionMethod::None>::CompressBound(UncompressedSize);
+                return CompressBound<CompressionMethod::None>(UncompressedSize);
             case CompressionMethod::Zlib:
-                return Detail::Compressor<CompressionMethod::Zlib>::CompressBound(UncompressedSize);
+                return CompressBound<CompressionMethod::Zlib>(UncompressedSize);
             case CompressionMethod::Gzip:
-                return Detail::Compressor<CompressionMethod::Gzip>::CompressBound(UncompressedSize);
+                return CompressBound<CompressionMethod::Gzip>(UncompressedSize);
             case CompressionMethod::Oodle:
-                return Detail::Compressor<CompressionMethod::Oodle>::CompressBound(UncompressedSize);
+                return CompressBound<CompressionMethod::Oodle>(UncompressedSize);
             case CompressionMethod::LZ4:
-                return Detail::Compressor<CompressionMethod::LZ4>::CompressBound(UncompressedSize);
+                return CompressBound<CompressionMethod::LZ4>(UncompressedSize);
+            case CompressionMethod::Brotli:
+                return CompressBound<CompressionMethod::Brotli>(UncompressedSize);
             default:
                 return 0;
             }
+        }
+
+        template<CompressionMethod Method>
+        static __forceinline bool Decompress(const char* CompBuf, int32_t CompSize, char* DecompBuf, int32_t DecompSize) {
+            return Detail::Compressor<Method>::Decompress(CompBuf, CompSize, DecompBuf, DecompSize);
         }
 
         static __forceinline bool Decompress(CompressionMethod Method, const char* CompBuf, int32_t CompSize, char* DecompBuf, int32_t DecompSize) {
             switch (Method)
             {
             case CompressionMethod::None:
-                return Detail::Compressor<CompressionMethod::None>::Decompress(CompBuf, CompSize, DecompBuf, DecompSize);
+                return Decompress<CompressionMethod::None>(CompBuf, CompSize, DecompBuf, DecompSize);
             case CompressionMethod::Zlib:
-                return Detail::Compressor<CompressionMethod::Zlib>::Decompress(CompBuf, CompSize, DecompBuf, DecompSize);
+                return Decompress<CompressionMethod::Zlib>(CompBuf, CompSize, DecompBuf, DecompSize);
             case CompressionMethod::Gzip:
-                return Detail::Compressor<CompressionMethod::Gzip>::Decompress(CompBuf, CompSize, DecompBuf, DecompSize);
+                return Decompress<CompressionMethod::Gzip>(CompBuf, CompSize, DecompBuf, DecompSize);
             case CompressionMethod::Oodle:
-                return Detail::Compressor<CompressionMethod::Oodle>::Decompress(CompBuf, CompSize, DecompBuf, DecompSize);
+                return Decompress<CompressionMethod::Oodle>(CompBuf, CompSize, DecompBuf, DecompSize);
             case CompressionMethod::LZ4:
-                return Detail::Compressor<CompressionMethod::LZ4>::Decompress(CompBuf, CompSize, DecompBuf, DecompSize);
+                return Decompress<CompressionMethod::LZ4>(CompBuf, CompSize, DecompBuf, DecompSize);
+            case CompressionMethod::Brotli:
+                return Decompress<CompressionMethod::Brotli>(CompBuf, CompSize, DecompBuf, DecompSize);
             default:
                 return false;
             }
