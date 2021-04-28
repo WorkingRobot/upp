@@ -1,4 +1,5 @@
 #include "../lib/Objects/Core/Serialization/FFileArchive.h"
+#include "../lib/Providers/UsmapProvider.h"
 #include "../lib/Readers/IoReader.h"
 #include "../lib/Vfs/Vfs.h"
 #include "../lib/Vfs/DirectoryIterator.h"
@@ -56,6 +57,9 @@ int main() {
     upp::Vfs::Vfs Vfs;
     upp::Readers::Error Error;
     KeyChainImpl KeyChain;
+
+    upp::Objects::FFileArchive UsmapAr(R"(J:\misc cold storage\++Fortnite+Release-16.30-CL-16086208-Windows_oo.usmap)");
+    Vfs.SetProvider<upp::Providers::UsmapProvider>(UsmapAr);
 
     upp::Objects::FFileArchive TocAr(R"(D:\FortniteGame\Content\Paks\pakchunk0-WindowsClient.utoc)");
     upp::Objects::FFileArchive Ar(R"(D:\FortniteGame\Content\Paks\pakchunk0-WindowsClient.ucas)");
