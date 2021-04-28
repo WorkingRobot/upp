@@ -1,7 +1,5 @@
 #include "BaseReader.h"
 
-#include <atomic>
-
 namespace upp::Readers {
     BaseReader::BaseReader(Objects::FArchive& Archive, const IKeyChain& KeyChain, uint32_t ReaderIdx) :
         Ar(Archive),

@@ -5,9 +5,16 @@
 namespace upp::Vfs {
     using namespace Objects;
 
-    void GlobalData::Initialize(Objects::FArchive& NameAr, Objects::FArchive& HashAr, Objects::FArchive& MetaAr)
+    void GlobalData::Initialize(FArchive& NameAr, FArchive& HashAr, FArchive& MetaAr)
     {
-        auto NameCount = HashAr.Size() / 8 - 1;
+        GlobalData::ReadNameMap(NameAr, HashAr.Size(), NameMap);
+
+        MetaAr.ReadBuffer(ScriptObjectEntries);
+    }
+
+    void GlobalData::ReadNameMap(FArchive& NameAr, uint32_t HashesSize, std::vector<std::string>& NameMap)
+    {
+        auto NameCount = HashesSize / 8 - 1;
         NameMap.resize(NameCount);
         for (auto& Name : NameMap) {
             FSerializedNameHeader Header;
@@ -22,7 +29,20 @@ namespace upp::Vfs {
                 NameAr.Read(Name.data(), Header.Len());
             }
         }
+    }
 
-        MetaAr.ReadBuffer(ScriptObjectEntries);
+    const FScriptObjectEntry& GlobalData::GetEntry(const FPackageObjectIndex& Idx) const
+    {
+        return *std::find_if(ScriptObjectEntries.begin(), ScriptObjectEntries.end(), [&](const FScriptObjectEntry& Entry) {
+            return Entry.GlobalIndex == Idx;
+        });
+    }
+
+    const std::string& GlobalData::GetName(const FMappedName& Name) const
+    {
+        if (Name.GetType() != EMappedNameType::Global) {
+            printf("oops\n");
+        }
+        return NameMap[Name.GetIndex()];
     }
 }

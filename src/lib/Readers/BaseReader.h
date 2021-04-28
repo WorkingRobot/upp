@@ -2,6 +2,7 @@
 
 #include "../IKeyChain.h"
 #include "../Objects/Core/Serialization/FArchive.h"
+#include "../Objects/CoreUObject/UObject/UPackage.h"
 #include "Error.h"
 
 namespace upp::Vfs {
@@ -22,6 +23,8 @@ namespace upp::Readers {
         const Objects::FArchive& GetArchive() const;
 
         virtual std::unique_ptr<Objects::FArchive> OpenFile(uint32_t FileIdx) = 0;
+
+        virtual std::unique_ptr<Objects::UPackage> ExportPackage(uint32_t AssetIdx, Vfs::Vfs& Vfs) = 0;
 
         virtual void Append(Vfs::Vfs& Vfs) = 0;
 

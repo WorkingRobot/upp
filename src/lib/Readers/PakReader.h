@@ -23,6 +23,8 @@ namespace upp::Readers {
 
         std::unique_ptr<Objects::FArchive> OpenFile(uint32_t FileIdx) override;
 
+        std::unique_ptr<Objects::UPackage> ExportPackage(uint32_t AssetIdx, Vfs::Vfs& Vfs) override;
+
         void Append(Vfs::Vfs& Vfs) override;
 
     private:

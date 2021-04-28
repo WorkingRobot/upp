@@ -53,15 +53,12 @@ void Iterate(const std::string& Path, const upp::Vfs::Directory<upp::Vfs::CStrin
 }
 
 int main() {
-    upp::Objects::FFileArchive TocAr(R"(D:\FortniteGame\Content\Paks\pakchunk0-WindowsClient.utoc)");
-    upp::Objects::FFileArchive Ar(R"(D:\FortniteGame\Content\Paks\pakchunk0-WindowsClient.ucas)");
-    upp::Objects::FFileArchive TocAr1000(R"(D:\FortniteGame\Content\Paks\pakchunk1000-WindowsClient.utoc)");
-    upp::Objects::FFileArchive Ar1000(R"(D:\FortniteGame\Content\Paks\pakchunk1000-WindowsClient.ucas)");
-    upp::Objects::FFileArchive TocArGlobal(R"(D:\FortniteGame\Content\Paks\global.utoc)");
-    upp::Objects::FFileArchive ArGlobal(R"(D:\FortniteGame\Content\Paks\global.ucas)");
     upp::Vfs::Vfs Vfs;
     upp::Readers::Error Error;
     KeyChainImpl KeyChain;
+
+    upp::Objects::FFileArchive TocAr(R"(D:\FortniteGame\Content\Paks\pakchunk0-WindowsClient.utoc)");
+    upp::Objects::FFileArchive Ar(R"(D:\FortniteGame\Content\Paks\pakchunk0-WindowsClient.ucas)");
     {
         auto Reader = Vfs.AddReaderIfValid<upp::Readers::IoReader>(Error, Ar, TocAr, KeyChain);
         if (!Reader) {
@@ -69,6 +66,9 @@ int main() {
             return 0;
         }
     }
+
+    upp::Objects::FFileArchive TocAr1000(R"(D:\FortniteGame\Content\Paks\pakchunk1000-WindowsClient.utoc)");
+    upp::Objects::FFileArchive Ar1000(R"(D:\FortniteGame\Content\Paks\pakchunk1000-WindowsClient.ucas)");
     {
         auto Reader = Vfs.AddReaderIfValid<upp::Readers::IoReader>(Error, Ar1000, TocAr1000, KeyChain);
         if (!Reader) {
@@ -76,6 +76,9 @@ int main() {
             return 0;
         }
     }
+
+    upp::Objects::FFileArchive TocArGlobal(R"(D:\FortniteGame\Content\Paks\global.utoc)");
+    upp::Objects::FFileArchive ArGlobal(R"(D:\FortniteGame\Content\Paks\global.ucas)");
     {
         auto Reader = Vfs.AddReaderIfValid<upp::Readers::IoReader>(Error, ArGlobal, TocArGlobal, KeyChain);
         if (!Reader) {
@@ -83,8 +86,12 @@ int main() {
             return 0;
         }
     }
+
+    // /Game/Athena/Items/Cosmetics/Dances/EID_Quantity_39X5D
+    // /Game/Catalog/NewDisplayAssets/DAv2_EID_Quantity_39X5D
+    Vfs.GetPackage("/FortniteGame/Content/Packages/Fortress_Sky/SkyDome/Master/S_SkyDome01");
     
-    // Iterate("", Vfs.GetRootDirectory()); return 0;
+    Iterate("", Vfs.GetRootDirectory()); return 0;
 
     for (auto& Entry : upp::Vfs::RecursiveDirectoryIterator(Vfs.GetRootDirectory())) {
         if (!Entry.IsFile()) {

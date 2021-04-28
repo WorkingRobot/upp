@@ -19,6 +19,10 @@ namespace upp::Objects {
 
         friend FArchive& operator>>(FArchive& Ar, FIoChunkId& Value);
 
+        uint64_t GetId() const {
+            return *(uint64_t*)Id;
+        }
+
         friend auto operator<=>(const FIoChunkId&, const FIoChunkId&) = default;
     };
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../Objects/CoreUObject/UObject/UPackage.h"
+#include "../Providers/BaseProvider.h"
 #include "../Readers/BaseReader.h"
 #include "Directory.h"
 #include "GlobalData.h"
@@ -16,6 +18,14 @@ namespace upp::Vfs {
         const Directory<>& GetRootDirectory() const;
 
         Directory<>& GetRootDirectory();
+
+        const std::unique_ptr<Providers::BaseProvider>& GetProvider() const;
+
+        template<typename T, typename... Ts, std::enable_if_t<std::is_base_of_v<Providers::BaseProvider, T>, bool> = true>
+        T& SetProvider(Ts&&... Args) {
+            Provider = std::make_unique<T>(std::forward<Ts>(Args)...);
+            return *(T*)Provider.get();
+        }
 
         template<typename T, typename... Ts, std::enable_if_t<std::is_base_of_v<Readers::BaseReader, T>, bool> = true>
         T& AddReader(Ts&&... Args) {
@@ -49,9 +59,13 @@ namespace upp::Vfs {
 
         std::unique_ptr<Objects::FArchive> GetFile(const File& File);
 
+        std::unique_ptr<Objects::UPackage> GetPackage(const char* Path);
+
     private:
         Directory<> Root;
         GlobalData Global;
+        std::unique_ptr<Providers::BaseProvider> Provider;
+
         std::vector<std::unique_ptr<Readers::BaseReader>> Readers;
         uint32_t NextReaderIdx;
     };

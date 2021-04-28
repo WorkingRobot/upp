@@ -140,6 +140,7 @@ namespace upp::Objects {
             return *this;
         }
 
+        // ReadCount is the element count, not byte count
         // Micro optimization to simply copy into the vector buffer
         // This is not a specialization of >> std::vector<T> because
         // it's impossible to know if >> does the same thing as a memcpy
@@ -174,6 +175,17 @@ namespace upp::Objects {
             Val = std::make_unique<char[]>(SerializeNum);
             Read(Val.get(), SerializeNum);
             return *this;
+        }
+
+        void Dump(const char* Path) {
+            auto o = Tell();
+            auto f = fopen(Path, "wb");
+            auto b = std::make_unique<char[]>(Size());
+            Seek(0, ESeekDir::Beg);
+            Read(b.get(), Size());
+            fwrite(b.get(), Size(), 1, f);
+            fclose(f);
+            Seek(o, ESeekDir::Beg);
         }
 
     protected:

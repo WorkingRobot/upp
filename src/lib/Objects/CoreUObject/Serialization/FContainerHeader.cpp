@@ -15,7 +15,7 @@ namespace upp::Objects {
         Ar >> StoreEntriesByteCount;
 
         Ar.ReadBuffer(Value.StoreEntries, Value.PackageCount);
-        Ar.ReadBuffer(Value.ImportedPackages, StoreEntriesByteCount - Value.PackageCount * sizeof(FPackageStoreEntry) / sizeof(FPackageId));
+        Ar.ReadBuffer(Value.ImportedPackages, (StoreEntriesByteCount - Value.PackageCount * sizeof(FPackageStoreEntry)) / sizeof(FPackageId));
 
         for (uint32_t Idx = 0; Idx < Value.PackageCount; ++Idx) {
             if (Value.StoreEntries[Idx].ImportedPackagesCount != 0) {
