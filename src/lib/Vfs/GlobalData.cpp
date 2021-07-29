@@ -20,9 +20,9 @@ namespace upp::Vfs {
             FSerializedNameHeader Header;
             NameAr >> Header;
             if (Header.IsUtf16()) {
-                auto StringData = std::make_unique<char16_t[]>(Header.Len());
-                NameAr.Read((char*)StringData.get(), Header.Len() * sizeof(char16_t));
-                Name = { StringData.get(), StringData.get() + Header.Len() };
+                std::wstring StringData(Header.Len(), '\0');
+                NameAr.Read((char*)StringData.data(), Header.Len() * sizeof(char16_t));
+                Name = std::filesystem::path(StringData).string();
             }
             else {
                 Name.resize(Header.Len());

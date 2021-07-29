@@ -2,6 +2,7 @@
 
 #include "ESeekDir.h"
 
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
@@ -90,26 +91,24 @@ namespace upp::Objects {
             int SaveNum;
             *this >> SaveNum;
 
-            bool LoadUCS2Char = SaveNum < 0;
+            if (SaveNum == 0) {
+                Val.clear();
+                return *this;
+            }
 
-            if (SaveNum < 0) {
+            if (SaveNum < 0) // LoadUCS2Char
+            {
                 // If SaveNum cannot be negated due to integer overflow, Ar is corrupted.
-                if (SaveNum == INT_MIN) {
+                if (SaveNum == std::numeric_limits<int>::min()) {
+                    // Tried to read FString with an invalid length
                     return *this;
                 }
 
                 SaveNum = -SaveNum;
-            }
 
-            if (SaveNum == 0) {
-                Val.clear();
-                return *this; // blank
-            }
-
-            if (LoadUCS2Char) {
-                auto StringData = std::make_unique<char16_t[]>(SaveNum);
-                Read((char*)StringData.get(), SaveNum * sizeof(char16_t));
-                Val = { StringData.get(), StringData.get() + SaveNum };
+                std::wstring StringData(SaveNum, '\0');
+                Read((char*)StringData.data(), SaveNum * sizeof(char16_t));
+                Val = std::filesystem::path(StringData).string();
             }
             else {
                 Val.resize(SaveNum - 1);
