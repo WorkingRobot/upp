@@ -4,19 +4,19 @@
 #include "../Objects/Core/Serialization/FByteArchive.h"
 #include "Usmap/Header.h"
 
+#include <unordered_map>
+
 namespace upp::Providers {
     using namespace Usmap;
     using namespace Objects;
 
     template<class K, class V>
     struct MiniLUT {
-        std::vector<K> Keys;
-        std::vector<std::reference_wrapper<const V>> Values;
+        std::unordered_map<K, std::reference_wrapper<const V>> Data;
 
         void Add(K Key, const V& Value)
         {
-            Keys.emplace_back(Key);
-            Values.emplace_back(Value);
+            Data.emplace(Key, Value);
         }
 
         const V* Get(K Key) const
@@ -24,10 +24,9 @@ namespace upp::Providers {
             if (Key == -1) {
                 return nullptr;
             }
-            for (uint32_t Idx = 0; Idx < Keys.size(); ++Idx) {
-                if (Keys[Idx] == Key) {
-                    return &Values[Idx].get();
-                }
+            auto Itr = Data.find(Key);
+            if (Itr != Data.end()) {
+                return &Itr->second.get();
             }
             return nullptr;
         }
