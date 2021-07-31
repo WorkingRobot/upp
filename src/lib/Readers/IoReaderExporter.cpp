@@ -56,7 +56,6 @@ namespace upp::Readers {
             return nullptr;
         }
         auto& AssetAr = *AssetArPtr;
-        AssetAr.Dump("asset.f");
 
         // https://github.com/EpicGames/UnrealEngine/blob/5df54b7ef1714f28fb5da319c3e83d96f0bedf08/Engine/Source/Runtime/CoreUObject/Private/Serialization/AsyncLoading2.cpp#L3415
         FPackageSummary Summary;
@@ -99,6 +98,7 @@ namespace upp::Readers {
 
                     std::string ClassName;
 
+                    // https://github.com/FabianFG/CUE4Parse/blob/9567177dbc2a05a5bc2edbe864896117ff6fdbf6/CUE4Parse/UE4/Assets/IoPackage.cs#L252
                     auto Type = Export.ClassIndex.GetType();
                     if (Export.ClassIndex.IsExport()) {
                         ClassName = GlobalData.GetName(GlobalData.GetEntry(Export.ClassIndex).ObjectName);
@@ -113,7 +113,8 @@ namespace upp::Readers {
                     //bool Unversioned = ((uint32_t)Summary.PackageFlags & (uint32_t)EPackageFlags::PKG_UnversionedProperties) != 0;
                     AssetAr.Seek(ExportOffset, ESeekDir::Beg);
                     Ret->Exports[Bundle.LocalExportIndex] = UObject::SerializeUnversioned(AssetAr, ClassName, Vfs);
-                    printf("%s %s %zu %zu\n", ObjectName.c_str(), ClassName.c_str(), ExportOffset, Export.CookedSerialOffset);
+                    // TODO: https://github.com/FabianFG/CUE4Parse/blob/08d4b68f379aedc7a87934107fab43ece94f3fa9/CUE4Parse/UE4/Assets/Exports/UObject.cs#L77
+                    //printf("%s %s %zu %zu\n", ObjectName.c_str(), ClassName.c_str(), ExportOffset, Export.CookedSerialOffset);
                     ExportOffset += Export.CookedSerialSize;
                 }
             }
