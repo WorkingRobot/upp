@@ -85,7 +85,7 @@ int main() {
     // /Game/Catalog/NewDisplayAssets/DAv2_EID_Quantity_39X5D
     //Vfs.GetPackage("/FortniteGame/Content/Packages/Fortress_Sky/SkyDome/Master/S_SkyDome01");
     
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 5000; ++i) {
         auto Start = std::chrono::steady_clock::now();
         auto Pkg = Vfs.GetPackage("/Game/Weapons/WeaponSkins/Wraps/Materials/MI_WeaponWrap_BuffCatFan");
         auto End = std::chrono::steady_clock::now();

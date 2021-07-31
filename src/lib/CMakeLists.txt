@@ -1,4 +1,4 @@
-﻿cmake_minimum_required (VERSION 3.18)
+﻿cmake_minimum_required(VERSION 3.18)
 
 ## Project Definition and Options ##
 
@@ -46,4 +46,24 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC" AND CMAKE_BUILD_TYPE MATCHES "Release")
         COMPILE_PDB_NAME upp_lib
         COMPILE_PDB_OUTPUT_DIR ${CMAKE_BINARY_DIR}
    )
+endif()
+
+# Use static CRT (the code is memcpy-heavy, avoid calling those dlls if we have to)
+set(CompilerFlags
+        CMAKE_CXX_FLAGS
+        CMAKE_CXX_FLAGS_DEBUG
+        CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_C_FLAGS
+        CMAKE_C_FLAGS_DEBUG
+        CMAKE_C_FLAGS_RELEASE
+        )
+foreach(CompilerFlag ${CompilerFlags})
+  string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+  string(REPLACE "-MD" "-MT" ${CompilerFlag} "${${CompilerFlag}}")
+endforeach()
+
+if (CMAKE_BUILD_TYPE MATCHES "Debug")
+    set_property(TARGET upp_lib PROPERTY MSVC_RUNTIME_LIBRARY MultiThreadedDebug)
+else()
+    set_property(TARGET upp_lib PROPERTY MSVC_RUNTIME_LIBRARY MultiThreaded)
 endif()
