@@ -2,6 +2,8 @@
 
 #include "../Crc32.h"
 
+#include <vector>
+
 namespace upp::Vfs {
     template<typename K, typename V>
     class SmallMap {
@@ -22,6 +24,11 @@ namespace upp::Vfs {
             return Data.end();
         }
 
+        void reserve(int Size) {
+            Hashes.reserve(Size);
+            Data.reserve(Size);
+        }
+
         template<bool CheckIfAlreadyExists>
         V& emplace_back(const char* KeyString, typename K::SizeT KeyStringSize, V&& Value) {
             if constexpr (CheckIfAlreadyExists) {
@@ -33,6 +40,24 @@ namespace upp::Vfs {
 
             Hashes.emplace_back(upp::Crc32(KeyString, KeyStringSize));
             return Data.emplace_back(K(KeyString, KeyStringSize), std::move(Value)).second;
+        }
+
+        template<bool CheckIfAlreadyExists>
+        V& emplace_back(const K& Key, V&& Value) {
+            return emplace_back<CheckIfAlreadyExists>(Key.GetString(), Key.GetSize(), std::move(Value));
+        }
+
+        template<bool CheckIfAlreadyExists>
+        V& emplace_back(K&& Key, V&& Value) {
+            if constexpr (CheckIfAlreadyExists) {
+                auto ChildIter = SearchValues(Key.GetString(), Key.GetSize());
+                if (ChildIter != end()) {
+                    return ChildIter->second;
+                }
+            }
+
+            Hashes.emplace_back(upp::Crc32(Key.GetString(), Key.GetSize()));
+            return Data.emplace_back(std::move(Key), std::move(Value)).second;
         }
 
         typename std::vector<std::pair<K, V>>::iterator SearchValues(const char* KeyString, typename K::SizeT KeyStringSize) {
@@ -51,6 +76,10 @@ namespace upp::Vfs {
             return end();
         }
 
+        typename std::vector<std::pair<K, V>>::iterator SearchValues(const K& Key) {
+            return SearchValues(Key.GetString(), Key.GetSize());
+        }
+
         template<bool CheckIfAlreadyExists>
         void Merge(typename SmallMap<K, V>&& Other) {
             for (auto& Item : Other.Data) {
@@ -61,6 +90,11 @@ namespace upp::Vfs {
         typename std::vector<std::pair<K, V>>::const_iterator SearchValues(const char* KeyString, typename K::SizeT KeyStringSize) const {
             // Forces a call to the non const SearchValues and converts the return value to a const_iterator
             return ((std::remove_cvref_t<decltype(*this)>*)this)->SearchValues(KeyString, KeyStringSize);
+        }
+
+        typename std::vector<std::pair<K, V>>::const_iterator SearchValues(const K& Key) const {
+            // Forces a call to the non const SearchValues and converts the return value to a const_iterator
+            return ((std::remove_cvref_t<decltype(*this)>*)this)->SearchValues(Key);
         }
 
     private:
