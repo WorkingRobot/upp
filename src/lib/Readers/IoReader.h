@@ -45,7 +45,7 @@ namespace upp::Readers {
         uint32_t CompressionBlockSize;
         uint64_t PartitionSize;
         Objects::FGuid EncryptionKeyGuid;
-        std::vector<std::string> CompressionMethods;
+        std::vector<CompressionMethod> CompressionMethods;
         std::vector<Objects::FIoOffsetAndLength> ChunkOffsetLengths;
         std::vector<Objects::FIoChunkId> ChunkIds;
         std::vector<Objects::FIoStoreTocCompressedBlockEntry> CompressionBlocks;

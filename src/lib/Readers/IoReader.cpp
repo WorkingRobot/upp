@@ -28,7 +28,22 @@ namespace upp::Readers {
         }
 
         EncryptionKeyGuid = Toc.Header.EncryptionKeyGuid;
-        CompressionMethods = std::move(Toc.CompressionMethods);
+        CompressionMethods.reserve(Toc.CompressionMethods.size());
+        std::transform(Toc.CompressionMethods.begin(), Toc.CompressionMethods.end(), std::back_inserter(CompressionMethods), [](const std::string& Method) {
+            switch (Crc32<true>(Method)) {
+            case Crc32<true>("None") :
+                return CompressionMethod::None;
+            case Crc32<true>("Zlib") :
+                return CompressionMethod::Zlib;
+            case Crc32<true>("Gzip") :
+                return CompressionMethod::Gzip;
+            case Crc32<true>("Oodle") :
+                return CompressionMethod::Oodle;
+            default:
+                // Unknown/unsupported method
+                return CompressionMethod::None;
+            }
+        });
         ChunkOffsetLengths = std::move(Toc.ChunkOffsetLengths);
         ChunkIds = std::move(Toc.ChunkIds);
         CompressionBlocks = std::move(Toc.CompressionBlocks);
@@ -57,19 +72,7 @@ namespace upp::Readers {
             return CompressionMethod::None;
         }
 
-        switch (Crc32<true>(CompressionMethods[CompressionMethodIdx])) {
-        case Crc32<true>("None"):
-            return CompressionMethod::None;
-        case Crc32<true>("Zlib"):
-            return CompressionMethod::Zlib;
-        case Crc32<true>("Gzip"):
-            return CompressionMethod::Gzip;
-        case Crc32<true>("Oodle"):
-            return CompressionMethod::Oodle;
-        default:
-            // Unknown/unsupported method
-            return CompressionMethod::None;
-        }
+        return CompressionMethods[CompressionMethodIdx];
     }
 
     bool IoReader::GetHeader(FContainerHeader& OutHeader)
