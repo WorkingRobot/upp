@@ -8,10 +8,11 @@ namespace upp::Providers {
         union DataUnion {
             struct EnumData {
                 std::unique_ptr<PropertyData> InnerType;
-                std::reference_wrapper<Name> EnumName;
+                const struct Enum* Enum;
             } Enum;
             struct StructData {
                 std::reference_wrapper<Name> StructType;
+                const struct Schema* StructSchema;
             } Struct;
             struct ArrayData {
                 std::unique_ptr<PropertyData> InnerType;
@@ -55,6 +56,31 @@ namespace upp::Providers {
             Type(EPropertyType::Unknown)
         {
             ConstructUnion();
+        }
+
+        PropertyData(const PropertyData& Other) :
+            Type(Other.Type)
+        {
+            ConstructUnion();
+            switch (Type)
+            {
+            case EPropertyType::EnumProperty:
+                Data.Enum.InnerType = std::make_unique<PropertyData>(*Other.Data.Enum.InnerType);
+                Data.Enum.Enum = Other.Data.Enum.Enum;
+                break;
+            case EPropertyType::StructProperty:
+                Data.Struct.StructType = Other.Data.Struct.StructType;
+                Data.Struct.StructSchema = Other.Data.Struct.StructSchema;
+                break;
+            case EPropertyType::SetProperty:
+            case EPropertyType::ArrayProperty:
+                Data.Array.InnerType = std::make_unique<PropertyData>(*Other.Data.Array.InnerType);
+                break;
+            case EPropertyType::MapProperty:
+                Data.Map.InnerType = std::make_unique<PropertyData>(*Other.Data.Map.InnerType);
+                Data.Map.ValueType = std::make_unique<PropertyData>(*Other.Data.Map.ValueType);
+                break;
+            }
         }
 
         PropertyData(PropertyData&& Other) noexcept :

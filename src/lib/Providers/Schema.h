@@ -7,7 +7,7 @@
 namespace upp::Providers {
     struct Schema {
         Providers::Name& Name;
-        Providers::Name* SuperType;
+        const Schema* SuperType;
         uint16_t PropCount;
         std::vector<Property> Properties;
     };

@@ -11,6 +11,7 @@ namespace upp::Providers {
     private:
         void Serialize(Objects::FArchive& Ar);
 
-        void SerializePropData(Objects::FArchive& Ar, PropertyData& PropData);
+        struct LUT;
+        void SerializePropData(Objects::FArchive& Ar, PropertyData& PropData, const LUT& LUT);
     };
 }

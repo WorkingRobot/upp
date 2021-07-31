@@ -8,6 +8,36 @@ namespace upp::Providers {
     using namespace Usmap;
     using namespace Objects;
 
+    template<class K, class V>
+    struct MiniLUT {
+        std::vector<K> Keys;
+        std::vector<std::reference_wrapper<const V>> Values;
+
+        void Add(K Key, const V& Value)
+        {
+            Keys.emplace_back(Key);
+            Values.emplace_back(Value);
+        }
+
+        const V* Get(K Key) const
+        {
+            if (Key == -1) {
+                return nullptr;
+            }
+            for (uint32_t Idx = 0; Idx < Keys.size(); ++Idx) {
+                if (Keys[Idx] == Key) {
+                    return &Values[Idx].get();
+                }
+            }
+            return nullptr;
+        }
+    };
+
+    struct UsmapProvider::LUT {
+        MiniLUT<uint32_t, Schema> Schemas;
+        MiniLUT<uint32_t, Enum> Enums;
+    };
+
     UsmapProvider::UsmapProvider(FArchive& Ar)
     {
         Header Header;
@@ -59,6 +89,8 @@ namespace upp::Providers {
             }
         }
 
+        LUT LUT;
+
         // Enums
         {
             uint32_t EnumCount;
@@ -78,7 +110,8 @@ namespace upp::Providers {
                     EnumNames.emplace_back(Names[NameIdx]);
                 }
 
-                Enums.emplace_back(Names[EnumNameIdx], std::move(EnumNames));
+                auto& Enum = Enums.emplace_back(Names[EnumNameIdx], std::move(EnumNames));
+                LUT.Enums.Add(EnumNameIdx, Enum);
             }
         }
 
@@ -107,15 +140,16 @@ namespace upp::Providers {
                     Ar >> ArraySize;
                     Ar >> NameIdx;
                     auto& Prop = Props.emplace_back(Names[NameIdx], SchemaIdx, ArraySize);
-                    SerializePropData(Ar, Prop.Data);
+                    SerializePropData(Ar, Prop.Data, LUT);
                 }
 
-                Schemas.emplace_back(Names[SchemaNameIdx], SchemaSuperNameIdx != (uint32_t)-1 ? &Names[SchemaSuperNameIdx] : nullptr, PropCount, std::move(Props));
+                auto& Schema = Schemas.emplace_back(Names[SchemaNameIdx], LUT.Schemas.Get(SchemaSuperNameIdx), PropCount, std::move(Props));
+                LUT.Schemas.Add(SchemaNameIdx, Schema);
             }
         }
     }
 
-    void UsmapProvider::SerializePropData(Objects::FArchive& Ar, PropertyData& PropData)
+    void UsmapProvider::SerializePropData(Objects::FArchive& Ar, PropertyData& PropData, const LUT& LUT)
     {
         EPropertyType PropType;
         Ar >> PropType;
@@ -126,10 +160,10 @@ namespace upp::Providers {
         {
             Data.Enum.InnerType = std::make_unique<PropertyData>();
 
-            SerializePropData(Ar, *Data.Enum.InnerType);
+            SerializePropData(Ar, *Data.Enum.InnerType, LUT);
             uint32_t Idx;
             Ar >> Idx;
-            Data.Enum.EnumName = Names[Idx];
+            Data.Enum.Enum = LUT.Enums.Get(Idx);
             break;
         }
         case EPropertyType::StructProperty:
@@ -137,20 +171,21 @@ namespace upp::Providers {
             uint32_t Idx;
             Ar >> Idx;
             Data.Struct.StructType = Names[Idx];
+            Data.Struct.StructSchema = LUT.Schemas.Get(Idx);
             break;
         }
         case EPropertyType::SetProperty:
         case EPropertyType::ArrayProperty:
             Data.Array.InnerType = std::make_unique<PropertyData>();
 
-            SerializePropData(Ar, *Data.Array.InnerType);
+            SerializePropData(Ar, *Data.Array.InnerType, LUT);
             break;
         case EPropertyType::MapProperty:
             Data.Map.InnerType = std::make_unique<PropertyData>();
             Data.Map.ValueType = std::make_unique<PropertyData>();
 
-            SerializePropData(Ar, *Data.Map.InnerType);
-            SerializePropData(Ar, *Data.Map.ValueType);
+            SerializePropData(Ar, *Data.Map.InnerType, LUT);
+            SerializePropData(Ar, *Data.Map.ValueType, LUT);
             break;
         default:
             break;
