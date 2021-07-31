@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../Vfs/SmallMap.h"
 #include "Enum.h"
 #include "Schema.h"
 
@@ -20,8 +21,8 @@ namespace upp::Providers {
         const Schema* GetSchema(const std::string& Name) const;
 
     protected:
-        std::vector<Enum> Enums;
-        std::vector<Schema> Schemas;
+        Vfs::SmallMap<Name, Enum> Enums;
+        Vfs::SmallMap<Name, Schema> Schemas;
         std::vector<Name> Names;
     };
 }

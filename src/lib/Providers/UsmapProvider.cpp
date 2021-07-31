@@ -110,7 +110,7 @@ namespace upp::Providers {
                     EnumNames.emplace_back(Names[NameIdx]);
                 }
 
-                auto& Enum = Enums.emplace_back(Names[EnumNameIdx], std::move(EnumNames));
+                auto& Enum = Enums.emplace_back<false>(Names[EnumNameIdx], Providers::Enum(Names[EnumNameIdx], std::move(EnumNames)));
                 LUT.Enums.Add(EnumNameIdx, Enum);
             }
         }
@@ -143,7 +143,7 @@ namespace upp::Providers {
                     SerializePropData(Ar, Prop.Data, LUT);
                 }
 
-                auto& Schema = Schemas.emplace_back(Names[SchemaNameIdx], LUT.Schemas.Get(SchemaSuperNameIdx), PropCount, std::move(Props));
+                auto& Schema = Schemas.emplace_back<false>(Names[SchemaNameIdx], Providers::Schema(Names[SchemaNameIdx], LUT.Schemas.Get(SchemaSuperNameIdx), PropCount, std::move(Props)));
                 LUT.Schemas.Add(SchemaNameIdx, Schema);
             }
         }

@@ -20,24 +20,20 @@ namespace upp::Providers {
 
     const Enum* BaseProvider::GetEnum(const std::string& Name) const
     {
-        auto Itr = std::find_if(Enums.begin(), Enums.end(), [&Name](const Enum& Enum) {
-            return Enum.Name.compare(Name.c_str(), Name.size());
-        });
-
+        auto Itr = Enums.SearchValues(Name.c_str(), Name.size());
+        
         if (Itr != Enums.end()) {
-            return &*Itr;
+            return &Itr->second;
         }
         return nullptr;
     }
 
     const Schema* BaseProvider::GetSchema(const std::string& Name) const
     {
-        auto Itr = std::find_if(Schemas.begin(), Schemas.end(), [&Name](const Schema& Schema) {
-            return Schema.Name.compare(Name.c_str(), Name.size());
-        });
+        auto Itr = Schemas.SearchValues(Name.c_str(), Name.size());
 
         if (Itr != Schemas.end()) {
-            return &*Itr;
+            return &Itr->second;
         }
         return nullptr;
     }
