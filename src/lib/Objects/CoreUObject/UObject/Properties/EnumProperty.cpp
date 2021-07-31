@@ -5,11 +5,6 @@
 #include "BaseProperty.h"
 
 namespace upp::Objects {
-    std::string GetEnumString(const Providers::Enum& Enum, size_t Idx)
-    {
-        return (std::string)Enum.Name + "::" + (Enum.Names.size() > Idx ? (std::string)Enum.Names[Idx].get() : std::to_string(Idx));
-    }
-
     EnumProperty::BaseProperty(FArchive& Ar, const FPropertyTag& Tag, EReadType ReadType)
     {
         switch (ReadType)
@@ -42,7 +37,8 @@ namespace upp::Objects {
                 Ar >> Idx;
                 EnumIdx = Idx;
             }
-            Value = GetEnumString(*Tag.TagData.GetData().Enum.Enum, EnumIdx);
+            auto& Enum = *Tag.TagData.GetData().Enum.Enum;
+            Value = Enum.Names.size() > EnumIdx ? (std::string)Enum.Names[EnumIdx].get() : std::to_string(EnumIdx);
             break;
         }
         case EReadType::Array:
