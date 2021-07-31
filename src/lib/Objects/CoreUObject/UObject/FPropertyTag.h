@@ -8,7 +8,6 @@ namespace upp::Objects {
         FPropertyTag(const Providers::Property& PropertyInfo);
         FPropertyTag(const Providers::PropertyData& PropertyData);
 
-        std::string Name;
-        Providers::PropertyData TagData;
+        const Providers::PropertyData& TagData;
     };
 }
