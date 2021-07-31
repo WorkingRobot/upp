@@ -14,6 +14,8 @@ namespace upp::Readers {
     public:
         BaseReader(Objects::FArchive& Archive, const IKeyChain& KeyChain, uint32_t ReaderIdx = -1);
 
+        virtual ~BaseReader() = default;
+
         bool HasError() const;
 
         Error GetError() const;

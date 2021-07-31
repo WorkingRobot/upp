@@ -21,6 +21,8 @@ namespace upp::Objects {
 
         // Public functions
     public:
+        virtual ~FArchive() = default;
+
         const std::string& GetName() const;
 
         // Stream operations

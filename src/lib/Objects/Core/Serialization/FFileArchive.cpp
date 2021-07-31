@@ -7,6 +7,13 @@ namespace upp::Objects {
         File = fopen(Path.string().c_str(), "rb");
     }
 
+    FFileArchive::~FFileArchive()
+    {
+        if (IsValid()) {
+            fclose(File);
+        }
+    }
+
     bool FFileArchive::IsValid() const
     {
         return File != nullptr;

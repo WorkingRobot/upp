@@ -10,6 +10,8 @@ namespace upp::Objects {
     public:
         FFileArchive(const std::filesystem::path& Path);
 
+        ~FFileArchive();
+
         bool IsValid() const;
 
         size_t Read(char* Data, size_t Size) override;
