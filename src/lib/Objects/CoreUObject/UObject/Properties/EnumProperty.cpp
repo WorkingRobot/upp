@@ -7,7 +7,7 @@
 namespace upp::Objects {
     std::string GetEnumString(const Providers::Enum& Enum, size_t Idx)
     {
-        return std::format("{}::{}", (std::string)Enum.Name, Enum.Names.size() > Idx ? (std::string)Enum.Names[Idx].get() : std::to_string(Idx));
+        return (std::string)Enum.Name + "::" + (Enum.Names.size() > Idx ? (std::string)Enum.Names[Idx].get() : std::to_string(Idx));
     }
 
     EnumProperty::BaseProperty(FArchive& Ar, const FPropertyTag& Tag, EReadType ReadType)
