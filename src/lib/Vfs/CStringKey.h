@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 namespace upp::Vfs {
     template<bool IsSmall>
@@ -29,6 +30,14 @@ namespace upp::Vfs {
 
         const char* GetString() const {
             return Data.get();
+        }
+
+        bool compare(const char* Str, SizeT Size) const {
+            return GetSize() == Size && memcmp(Str, GetString(), Size) == 0;
+        }
+
+        operator std::string() const {
+            return { GetString(), GetSize() };
         }
 
     private:
