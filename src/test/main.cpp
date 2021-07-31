@@ -87,7 +87,7 @@ int main() {
     
     for (int i = 0; i < 100; ++i) {
         auto Start = std::chrono::steady_clock::now();
-        Vfs.GetPackage("/Game/Weapons/WeaponSkins/Wraps/Materials/MI_WeaponWrap_BuffCatFan");
+        auto Pkg = Vfs.GetPackage("/Game/Weapons/WeaponSkins/Wraps/Materials/MI_WeaponWrap_BuffCatFan");
         auto End = std::chrono::steady_clock::now();
         printf("%.02f ms\n", (End - Start).count() / 1000000.);
     }

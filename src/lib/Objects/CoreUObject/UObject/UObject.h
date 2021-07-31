@@ -10,10 +10,6 @@ namespace upp::Vfs {
 
 namespace upp::Objects {
     struct UObject {
-        std::string ObjectName;
-
-        std::string ClassName;
-
         std::vector<FProperty> Properties;
 
         static std::unique_ptr<UObject> SerializeUnversioned(FArchive& Ar, const std::string& ClassName, Vfs::Vfs& Vfs);
