@@ -32,11 +32,11 @@ class KeyChainImpl : public upp::IKeyChain {
     {
         // pakchunk9 = c078e51f6ec259767bf61fee58cd3c4c367e487d9dfd9ef1c2d504bbc97360ee
         // pakchunk0 = AB32BAB083F7D923A33AA768BC64B64BF62488948BD49FE61D95343492252558
-        static upp::Objects::FAESSchedule Key = KeyFromHex("1522C5C59FD8B9964F10B23DD55BB0255F51D8ABEF1CE7B6BBBBE3239AE18929");
-        static upp::Objects::FGuid Guid1000 = GuidFromHex("08788A9DA34F4164ADA4F09FBF698CC3");
-        static upp::Objects::FAESSchedule Key1000 = KeyFromHex("0E5851ADD0460CD0035003118F8A00530C11DA3DF736BD99360D825378B5FCF8");
-        if (Guid == Guid1000) {
-            return Key1000;
+        static upp::Objects::FAESSchedule Key = KeyFromHex("447BBFD835ADFFF5BE68CFE5D93BF3A27A4641656A8C7F7F5051104F6C73E25E");
+        static upp::Objects::FGuid Guid1006 = GuidFromHex("58388BA7BD1643A85EFD49BF26EF5912");
+        static upp::Objects::FAESSchedule Key1006 = KeyFromHex("02BBB7DBB2491EC18A083D989504FE123CBADFFFEF972F4285374AB1F80BEF9A");
+        if (Guid == Guid1006) {
+            return Key1006;
         }
         return Key;
     }
@@ -58,25 +58,15 @@ int main() {
     upp::Readers::Error Error;
     KeyChainImpl KeyChain;
 
-    upp::Objects::FFileArchive UsmapAr(R"(J:\misc cold storage\++Fortnite+Release-16.30-CL-16086208-Windows_oo.usmap)");
+    upp::Objects::FFileArchive UsmapAr(R"(J:\misc cold storage\++Fortnite+Release-17.21-CL-16967001-Windows_oo.usmap)");
     Vfs.SetProvider<upp::Providers::UsmapProvider>(UsmapAr);
 
-    upp::Objects::FFileArchive TocAr(R"(D:\FortniteGame\Content\Paks\pakchunk0-WindowsClient.utoc)");
-    upp::Objects::FFileArchive Ar(R"(D:\FortniteGame\Content\Paks\pakchunk0-WindowsClient.ucas)");
+    upp::Objects::FFileArchive TocAr(R"(D:\FortniteGame\Content\Paks\pakchunk1006-WindowsClient.utoc)");
+    upp::Objects::FFileArchive Ar(R"(D:\FortniteGame\Content\Paks\pakchunk1006-WindowsClient.ucas)");
     {
         auto Reader = Vfs.AddReaderIfValid<upp::Readers::IoReader>(Error, Ar, TocAr, KeyChain);
         if (!Reader) {
             printf("Error: %d\n", Error);
-            return 0;
-        }
-    }
-
-    upp::Objects::FFileArchive TocAr1000(R"(D:\FortniteGame\Content\Paks\pakchunk1000-WindowsClient.utoc)");
-    upp::Objects::FFileArchive Ar1000(R"(D:\FortniteGame\Content\Paks\pakchunk1000-WindowsClient.ucas)");
-    {
-        auto Reader = Vfs.AddReaderIfValid<upp::Readers::IoReader>(Error, Ar1000, TocAr1000, KeyChain);
-        if (!Reader) {
-            printf("Error 1000: %d\n", Error);
             return 0;
         }
     }
@@ -93,9 +83,17 @@ int main() {
 
     // /Game/Athena/Items/Cosmetics/Dances/EID_Quantity_39X5D
     // /Game/Catalog/NewDisplayAssets/DAv2_EID_Quantity_39X5D
-    Vfs.GetPackage("/FortniteGame/Content/Packages/Fortress_Sky/SkyDome/Master/S_SkyDome01");
+    //Vfs.GetPackage("/FortniteGame/Content/Packages/Fortress_Sky/SkyDome/Master/S_SkyDome01");
     
-    Iterate("", Vfs.GetRootDirectory()); return 0;
+    for (int i = 0; i < 100; ++i) {
+        auto Start = std::chrono::steady_clock::now();
+        Vfs.GetPackage("/Game/Weapons/WeaponSkins/Wraps/Materials/MI_WeaponWrap_BuffCatFan");
+        auto End = std::chrono::steady_clock::now();
+        printf("%.02f ms\n", (End - Start).count() / 1000000.);
+    }
+    return 0;
+
+    Iterate("", Vfs.GetRootDirectory()); 
 
     for (auto& Entry : upp::Vfs::RecursiveDirectoryIterator(Vfs.GetRootDirectory())) {
         if (!Entry.IsFile()) {
