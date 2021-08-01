@@ -22,7 +22,7 @@ namespace upp::Objects {
 			ZeroMaskItr++;
 		}
 
-		if (!RemainingFragmentValues) {
+		if (RemainingFragmentValues == 0) {
 			if (FragmentItr->IsLast) {
 				IsDone = true;
 				return *this;
@@ -63,7 +63,7 @@ namespace upp::Objects {
 	{
 		SchemaIdx += FragmentItr->SkipNum;
 
-		while (!FragmentItr->ValueNum) {
+		while (FragmentItr->ValueNum == 0) {
 			if (FragmentItr->IsLast) {
 				IsDone = true;
 				// Iterator needs data past the last fragment, archive is corrupted

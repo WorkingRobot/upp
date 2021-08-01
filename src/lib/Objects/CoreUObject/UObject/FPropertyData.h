@@ -7,7 +7,6 @@
 namespace upp::Objects {
     struct FPropertyData {
         std::variant<
-            std::monostate,
             ByteProperty,
             BoolProperty,
             IntProperty,
@@ -38,11 +37,13 @@ namespace upp::Objects {
             FieldPathProperty
         > Data;
 
-        FPropertyData(FArchive& Ar, const FPropertyTag& Tag, EReadType ReadType)
+        FPropertyData(FArchive& Ar, const FPropertyTag& Tag, EReadType ReadType) :
+            Data(Construct(Ar, Tag, ReadType))
         {
-            Construct(Ar, Tag, ReadType);
+            
         }
 
-        void Construct(FArchive& Ar, const FPropertyTag& Tag, EReadType ReadType);
+    private:
+        static decltype(Data) Construct(FArchive& Ar, const FPropertyTag& Tag, EReadType ReadType);
     };
 }

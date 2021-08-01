@@ -10,5 +10,6 @@ namespace upp::Objects {
     FPropertyTag::FPropertyTag(const Providers::PropertyData& PropertyData) :
         TagData(PropertyData)
     {
+
     }
 }

@@ -1,11 +1,11 @@
 #include "FPropertyData.h"
 
 namespace upp::Objects {
-    void FPropertyData::Construct(FArchive& Ar, const FPropertyTag& Tag, EReadType ReadType)
+    decltype(FPropertyData::Data) FPropertyData::Construct(FArchive& Ar, const FPropertyTag& Tag, EReadType ReadType)
     {
         switch (Tag.TagData.GetType())
         {
-#define CASE(Var) case Providers::EPropertyType::##Var##Property: Data.emplace<Var##Property>(Ar, Tag, ReadType); break
+#define CASE(Var) case Providers::EPropertyType::##Var##Property: return Var##Property(Ar, Tag, ReadType); break
 
             CASE(Byte);
             CASE(Bool);
@@ -37,8 +37,6 @@ namespace upp::Objects {
             CASE(FieldPath);
 
 #undef CASE
-        default:
-            break;
         }
     }
 }
