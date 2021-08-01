@@ -4,18 +4,9 @@
 
 namespace upp::Objects {
 	struct FSerializedNameHeader {
-    public:
-        bool IsUtf16() const {
-            return Data[0] & 0x80;
-        }
-
-        uint16_t Len() const {
-            return ((Data[0] & 0x7Fu) << 8) + Data[1];
-        }
+        uint16_t Len;
+        bool IsUtf16;
 
         friend FArchive& operator>>(FArchive& Ar, FSerializedNameHeader& Value);
-
-    private:
-        uint8_t Data[2];
 	};
 }

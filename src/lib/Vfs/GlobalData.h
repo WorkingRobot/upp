@@ -3,6 +3,8 @@
 #include "../Objects/Core/Serialization/FArchive.h"
 #include "../Objects/CoreUObject/Serialization/FScriptObjectEntry.h"
 
+#include <unordered_map>
+
 namespace upp::Vfs {
     class GlobalData {
     public:
@@ -17,5 +19,6 @@ namespace upp::Vfs {
     private:
         std::vector<std::string> NameMap;
         std::vector<Objects::FScriptObjectEntry> ScriptObjectEntries;
+        std::unordered_map<Objects::FPackageObjectIndex, std::reference_wrapper<Objects::FScriptObjectEntry>> EntryLUT;
     };
 }

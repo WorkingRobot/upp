@@ -26,3 +26,13 @@ namespace upp::Objects {
         friend auto operator<=>(const FPackageObjectIndex&, const FPackageObjectIndex&) = default;
     };
 }
+
+namespace std {
+    template<> struct hash<upp::Objects::FPackageObjectIndex>
+    {
+        std::size_t operator()(upp::Objects::FPackageObjectIndex const& s) const noexcept
+        {
+            return s.TypeAndId;
+        }
+    };
+}
