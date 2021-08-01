@@ -3,6 +3,8 @@
 #include "../../../Vfs/Vfs.h"
 #include "../Serialization/FIterator.h"
 
+#include <numeric>
+
 namespace upp::Objects {
     const Providers::Property* GetProperty(const Providers::Schema& Schema, uint16_t SchemaIdx)
     {
@@ -39,13 +41,11 @@ namespace upp::Objects {
         FUnversionedHeader Header;
         Ar >> Header;
 
+        Properties.reserve(std::accumulate(Header.Fragments.begin(), Header.Fragments.end(), 0u, [](uint32_t V, const FFragment& Frag) { return V + Frag.ValueNum; }));
+
         FIterator Itr(Header);
         if (Itr.IsValid()) {
             do {
-                if (!Itr.ShouldSerialize()) {
-                    continue;
-                }
-
                 auto PropInfo = GetProperty(Schema, Itr.GetSchemaIdx());
                 if (PropInfo) {
                     Properties.emplace_back(Ar, *PropInfo, Itr.IsNonZero() ? EReadType::Normal : EReadType::Zero);
