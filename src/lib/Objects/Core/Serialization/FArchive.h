@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../UObject/FName.h"
 #include "ESeekDir.h"
 
 #include <filesystem>
@@ -85,6 +86,13 @@ namespace upp::Objects {
 
         FArchive& operator>>(double& Val) {
             Read((char*)&Val, sizeof(Val));
+            return *this;
+        }
+
+        virtual FArchive& operator>>(FName& Val) {
+            *this >> Val.Index;
+            *this >> Val.Number;
+
             return *this;
         }
 

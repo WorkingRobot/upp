@@ -1,6 +1,7 @@
 #include "UObject.h"
 
 #include "../../../Vfs/Vfs.h"
+#include "../../Engine/Engine/UTexture2D.h"
 #include "../Serialization/FIterator.h"
 
 #include <numeric>
@@ -21,9 +22,9 @@ namespace upp::Objects {
         return nullptr;
     }
 
-    std::unique_ptr<UObject> UObject::SerializeUnversioned(FArchive& Ar, const std::string& ClassName, Vfs::Vfs& Vfs)
+    std::unique_ptr<UObject> UObject::SerializeUnversioned(FArchive& Ar, const std::string& ClassName, FSerializeCtx& Ctx, bool IsCDO)
     {
-        auto& Provider = Vfs.GetProvider();
+        auto& Provider = Ctx.GetVfs().GetProvider();
         if (!Provider) {
             return nullptr;
         }
@@ -33,10 +34,19 @@ namespace upp::Objects {
             return nullptr;
         }
 
-        return std::unique_ptr<UObject>(new UObject(Ar, *SchemaPtr));
+        switch (Crc32(ClassName))
+        {
+#define CASE(Name, Type) case Crc32(Name): return std::make_unique<Type>(Ar, *SchemaPtr, Ctx, IsCDO)
+
+        CASE("Texture2D", UTexture2D);
+
+#undef CASE
+        default: return std::unique_ptr<UObject>(new UObject(Ar, *SchemaPtr, IsCDO));
+        }
     }
 
-    UObject::UObject(FArchive& Ar, const Providers::Schema& Schema)
+    UObject::UObject(FArchive& Ar, const Providers::Schema& Schema, bool IsCDO) :
+        Schema(Schema)
     {
         FUnversionedHeader Header;
         Ar >> Header;
@@ -58,6 +68,15 @@ namespace upp::Objects {
                     // It's okay though since it's zeroed and not really serialized
                 }
             } while (++Itr);
+        }
+
+        if (!IsCDO) {
+            int HasObjectGuid;
+            Ar >> HasObjectGuid;
+            if (HasObjectGuid) {
+                FGuid Guid;
+                Ar >> Guid;
+            }
         }
     }
 }

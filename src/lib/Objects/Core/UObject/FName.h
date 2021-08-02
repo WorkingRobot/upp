@@ -1,14 +1,18 @@
 #pragma once
 
-#include "../Serialization/FArchive.h"
+#include <memory>
+#include <string>
 
 namespace upp::Objects {
 	struct FName {
-        FName(uint32_t Index = 0, uint32_t Number = 0);
-
         uint32_t Index;
         uint32_t Number;
+        const std::string* String;
 
-        friend FArchive& operator>>(FArchive& Ar, FName& Value);
+        FName() = default;
+
+        operator const std::string&() const;
+
+        bool IsNone() const;
 	};
 }

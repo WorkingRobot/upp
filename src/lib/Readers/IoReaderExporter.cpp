@@ -1,11 +1,13 @@
 #include "IoReader.h"
 
+#include "../Objects/Core/IO/FIoArchive.h"
 #include "../Objects/CoreUObject/Serialization/FExportBundleEntry.h"
 #include "../Objects/CoreUObject/Serialization/FExportBundleHeader.h"
 #include "../Objects/CoreUObject/Serialization/FExportMapEntry.h"
 #include "../Objects/CoreUObject/Serialization/FPackageSummary.h"
 #include "../Vfs/Vfs.h"
 #include "../Align.h"
+#include "NameMappedArchive.h"
 
 namespace upp::Readers {
     using namespace Objects;
@@ -55,7 +57,7 @@ namespace upp::Readers {
         if (AssetArPtr == nullptr) {
             return nullptr;
         }
-        auto& AssetAr = *AssetArPtr;
+        FIoArchive& AssetAr = (FIoArchive&)*AssetArPtr;
 
         // https://github.com/EpicGames/UnrealEngine/blob/5df54b7ef1714f28fb5da319c3e83d96f0bedf08/Engine/Source/Runtime/CoreUObject/Private/Serialization/AsyncLoading2.cpp#L3415
         FPackageSummary Summary;
@@ -85,6 +87,9 @@ namespace upp::Readers {
         AssetAr.Seek(Summary.GraphDataOffset, ESeekDir::Beg);
         AssetAr >> GraphData;
 
+        FSerializeCtx Ctx(Vfs, NameMap.front());
+        NameMappedArchive ExportAr(std::move(NameMap), std::move(AssetAr));
+
         // https://github.com/EpicGames/UnrealEngine/blob/5df54b7ef1714f28fb5da319c3e83d96f0bedf08/Engine/Source/Runtime/CoreUObject/Private/Serialization/AsyncLoading2.cpp#L3508
         size_t ExportOffset = Summary.GraphDataOffset + Summary.GraphDataSize;
         for (auto& BundleHeader : BundleHeaders) {
@@ -94,7 +99,7 @@ namespace upp::Readers {
                 if (Bundle.CommandType == EExportCommandType::Serialize) {
                     //auto& ExportObject = Ret->Exports[Bundle.LocalExportIndex];
 
-                    auto& ObjectName = NameMap[Export.ObjectName.Index];
+                    auto& ObjectName = ExportAr.GetName(Export.ObjectName.Index);
 
                     std::string ClassName;
 
@@ -111,8 +116,9 @@ namespace upp::Readers {
                     }
 
                     //bool Unversioned = ((uint32_t)Summary.PackageFlags & (uint32_t)EPackageFlags::PKG_UnversionedProperties) != 0;
-                    AssetAr.Seek(ExportOffset, ESeekDir::Beg);
-                    Ret->Exports[Bundle.LocalExportIndex] = UObject::SerializeUnversioned(AssetAr, ClassName, Vfs);
+                    ExportAr.Seek(ExportOffset, ESeekDir::Beg);
+                    Ret->Exports[Bundle.LocalExportIndex] = UObject::SerializeUnversioned(ExportAr, ClassName, Ctx, (uint32_t)Export.ObjectFlags & (uint32_t)EObjectFlags::RF_ClassDefaultObject);
+                    //bool Unversioned = ((uint32_t)Summary.PackageFlags & (uint32_t)EPackageFlags::PKG_UnversionedProperties) != 0;
                     // TODO: https://github.com/FabianFG/CUE4Parse/blob/08d4b68f379aedc7a87934107fab43ece94f3fa9/CUE4Parse/UE4/Assets/Exports/UObject.cs#L77
                     //printf("%s %s %zu %zu\n", ObjectName.c_str(), ClassName.c_str(), ExportOffset, Export.CookedSerialOffset);
                     ExportOffset += Export.CookedSerialSize;

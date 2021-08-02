@@ -43,10 +43,12 @@ namespace upp::Objects {
         }
         case EReadType::Array:
         case EReadType::Map:
+        {
             FName Name;
             Ar >> Name;
-            Value = std::format("FName({}, {})", Name.Index, Name.Number);
+            Value = Name;
             break;
+        }
         }
     }
 };

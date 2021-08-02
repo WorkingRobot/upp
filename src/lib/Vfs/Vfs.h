@@ -6,6 +6,8 @@
 #include "Directory.h"
 #include "GlobalData.h"
 
+#include <memory>
+
 namespace upp::Vfs {
     class Vfs {
     public:

@@ -2,8 +2,10 @@
 
 #include "../../../../Crc32.h"
 #include "../../../../Providers/Schema.h"
+#include "../../../Core/Math/FIntPoint.h"
 #include "../../../Core/Math/FLinearColor.h"
 #include "../../../Core/Misc/FGuid.h"
+#include "../../../GameplayTags/FGameplayTagContainer.h"
 #include "../UObject.h"
 #include "BaseProperty.h"
 
@@ -15,13 +17,73 @@ namespace upp::Objects {
         {
 #define CASE(Name, Type) case Crc32(Name): { auto& Data = Value.emplace<Type>(); if (ReadType != EReadType::Zero) { Ar >> Data; } break; }
 
+            CASE("GameplayTagContainer", FGameplayTagContainer);
             CASE("Guid", FGuid);
+            CASE("IntPoint", FIntPoint);
             CASE("LinearColor", FLinearColor);
 
 #undef CASE
+#ifdef _DEBUG
+#define CASE(Name) case Crc32(Name): { printf("No parser written for " Name "!\n"); goto DefaultCase; }
+
+            CASE("Box");
+            CASE("Box2D");
+            CASE("Color");
+            CASE("ColorMaterialInput");
+            CASE("DateTime");
+            CASE("ExpressionInput");
+            CASE("FrameNumber");
+            CASE("NavAgentSelector");
+            CASE("SmartName");
+            CASE("RichCurveKey");
+            CASE("SimpleCurveKey");
+            CASE("ScalarMaterialInput");
+            CASE("ShadingModelMaterialInput");
+            CASE("VectorMaterialInput");
+            CASE("Vector2MaterialInput");
+            CASE("MaterialAttributesInput");
+            CASE("SkeletalMeshSamplingLODBuiltData");
+            CASE("PerPlatformBool");
+            CASE("PerPlatformFloat");
+            CASE("PerPlatformInt");
+            CASE("PerQualityLevelInt");
+            CASE("IntVector");
+            CASE("LevelSequenceObjectReferenceMap");
+            CASE("NiagaraVariable");
+            CASE("NiagaraVariableBase");
+            CASE("NiagaraVariableWithOffset");
+            CASE("MovieSceneEvalTemplatePtr");
+            CASE("MovieSceneEvaluationFieldEntityTree");
+            CASE("MovieSceneEvaluationKey");
+            CASE("MovieSceneFloatChannel");
+            CASE("MovieSceneFloatValue");
+            CASE("MovieSceneFrameRange");
+            CASE("MovieSceneSegment");
+            CASE("MovieSceneSegmentIdentifier");
+            CASE("MovieSceneSequenceID");
+            CASE("MovieSceneTrackIdentifier");
+            CASE("MovieSceneTrackImplementationPtr");
+            CASE("Plane");
+            CASE("Quat");
+            CASE("Rotator");
+            CASE("SectionEvaluationDataTree");
+            CASE("SoftClassPath");
+            CASE("SoftObjectPath");
+            CASE("Timespan");
+            CASE("Vector");
+            CASE("Vector2D");
+            CASE("Vector4");
+            CASE("Vector_NetQuantize");
+            CASE("Vector_NetQuantize10");
+            CASE("Vector_NetQuantize100");
+            CASE("Vector_NetQuantizeNormal");
+
+        DefaultCase:
+#undef CASE
+#endif
         default:
             if (ReadType != EReadType::Zero) {
-                Value.emplace<UObject>(UObject(Ar, *Tag.TagData.GetData().Struct.StructSchema));
+                Value.emplace<UObject>(UObject(Ar, *Tag.TagData.GetData().Struct.StructSchema, true));
             }
             else {
                 Value.emplace<std::monostate>();
