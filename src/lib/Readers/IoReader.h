@@ -32,6 +32,8 @@ namespace upp::Readers {
     private:
         friend class upp::Objects::FIoArchive;
 
+        void Construct(Objects::FIoStoreTocResource&& Toc);
+
         const Objects::FAESSchedule& GetSchedule() const;
 
         uint32_t GetChunkIdx(const Objects::FIoChunkId& Id) const;

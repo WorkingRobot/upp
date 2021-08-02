@@ -36,11 +36,26 @@ namespace upp::Vfs {
             return GetSize() == Size && memcmp(Str, GetString(), Size) == 0;
         }
 
+        bool operator==(const CStringKey& Key) const {
+            return compare(Key.GetString(), Key.GetSize());
+        }
+
         operator std::string() const {
             return { GetString(), GetSize() };
         }
 
     private:
         std::unique_ptr<char[]> Data;
+    };
+}
+
+namespace std {
+    template<bool IsSmall>
+    struct hash<upp::Vfs::CStringKey<IsSmall>>
+    {
+        std::size_t operator()(upp::Vfs::CStringKey<IsSmall> const& s) const noexcept
+        {
+            return _Hash_array_representation(s.GetString(), s.GetSize());
+        }
     };
 }

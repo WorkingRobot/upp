@@ -69,8 +69,8 @@ namespace upp::Vfs {
         }
 
     private:
-        SmallMap<K, Directory> Directories;
-        SmallMap<K, File> Files;
+        SmallMap<K, Directory, true> Directories;
+        SmallMap<K, File, true> Files;
 
         template<typename T>
         friend class DirectoryIterator;

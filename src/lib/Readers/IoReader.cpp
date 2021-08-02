@@ -7,62 +7,22 @@
 namespace upp::Readers {
     using namespace Objects;
 
-    FIoStoreTocResource GetToc(Objects::FArchive& Ar, const IKeyChain& KeyChain) {
-        FIoStoreTocResource Toc;
-        Toc.Serialize(Ar, KeyChain);
-        return Toc;
-    }
-
     IoReader::IoReader(Objects::FArchive& Archive, Objects::FArchive& TocArchive, const IKeyChain& KeyChain, uint32_t ReaderIdx) :
-        IoReader(Archive, GetToc(TocArchive, KeyChain), KeyChain, ReaderIdx)
+        BaseReader(Archive, KeyChain, ReaderIdx)
     {
-
+        FIoStoreTocResource Toc;
+        auto Error = Toc.Serialize(TocArchive, KeyChain);
+        if (Error != Error::None) {
+            SetError(Error);
+            return;
+        }
+        Construct(std::move(Toc));
     }
 
     IoReader::IoReader(Objects::FArchive& Archive, FIoStoreTocResource&& Toc, const IKeyChain& KeyChain, uint32_t ReaderIdx) :
         BaseReader(Archive, KeyChain, ReaderIdx)
     {
-        if (!Toc.Header.Magic.IsValid()) {
-            SetError(Error::InvalidTocHeader);
-            return;
-        }
-
-        EncryptionKeyGuid = Toc.Header.EncryptionKeyGuid;
-        CompressionMethods.reserve(Toc.CompressionMethods.size());
-        std::transform(Toc.CompressionMethods.begin(), Toc.CompressionMethods.end(), std::back_inserter(CompressionMethods), [](const std::string& Method) {
-            switch (Crc32<true>(Method)) {
-            case Crc32<true>("None") :
-                return CompressionMethod::None;
-            case Crc32<true>("Zlib") :
-                return CompressionMethod::Zlib;
-            case Crc32<true>("Gzip") :
-                return CompressionMethod::Gzip;
-            case Crc32<true>("Oodle") :
-                return CompressionMethod::Oodle;
-            default:
-                // Unknown/unsupported method
-                return CompressionMethod::None;
-            }
-        });
-        ChunkOffsetLengths = std::move(Toc.ChunkOffsetLengths);
-        ChunkIds = std::move(Toc.ChunkIds);
-        CompressionBlocks = std::move(Toc.CompressionBlocks);
-        CompressionBlockSize = Toc.Header.CompressionBlockSize;
-        PartitionSize = Toc.Header.PartitionSize;
-        ContainerFlags = Toc.Header.ContainerFlags;
-        ContainerId = Toc.Header.ContainerId;
-
-        if ((uint8_t)Toc.Header.ContainerFlags & (uint8_t)EIoContainerFlags::Indexed && Toc.Header.DirectoryIndexSize != 0) {
-            auto& Index = Toc.DirectoryIndex;
-            if (!ValidateMountPoint(Index.MountPoint)) {
-                printf("Bad mount point, mounting to root\n");
-            }
-            CompactFilePath(Index.MountPoint);
-
-            auto& MountDir = this->Index.CreateDirectories<false>(Index.MountPoint.c_str() + 1);
-
-            Append(Index, MountDir, Index.DirectoryEntries[0].FirstChildEntry);
-        }
+        Construct(std::move(Toc));
     }
 
     CompressionMethod IoReader::GetCompressionMethod(uint32_t CompressionMethodIdx) const
@@ -120,6 +80,51 @@ namespace upp::Readers {
             else {
                 // Not a true global store
             }
+        }
+    }
+
+    void IoReader::Construct(FIoStoreTocResource&& Toc)
+    {
+        if (!Toc.Header.Magic.IsValid()) {
+            SetError(Error::InvalidTocHeader);
+            return;
+        }
+
+        EncryptionKeyGuid = Toc.Header.EncryptionKeyGuid;
+        CompressionMethods.reserve(Toc.CompressionMethods.size());
+        std::transform(Toc.CompressionMethods.begin(), Toc.CompressionMethods.end(), std::back_inserter(CompressionMethods), [](const std::string& Method) {
+            switch (Crc32(Method)) {
+            case Crc32("None"):
+                return CompressionMethod::None;
+            case Crc32("Zlib"):
+                return CompressionMethod::Zlib;
+            case Crc32("Gzip"):
+                return CompressionMethod::Gzip;
+            case Crc32("Oodle"):
+                return CompressionMethod::Oodle;
+            default:
+                // Unknown/unsupported method
+                return CompressionMethod::None;
+            }
+        });
+        ChunkOffsetLengths = std::move(Toc.ChunkOffsetLengths);
+        ChunkIds = std::move(Toc.ChunkIds);
+        CompressionBlocks = std::move(Toc.CompressionBlocks);
+        CompressionBlockSize = Toc.Header.CompressionBlockSize;
+        PartitionSize = Toc.Header.PartitionSize;
+        ContainerFlags = Toc.Header.ContainerFlags;
+        ContainerId = Toc.Header.ContainerId;
+
+        if ((uint8_t)Toc.Header.ContainerFlags & (uint8_t)EIoContainerFlags::Indexed && Toc.Header.DirectoryIndexSize != 0) {
+            auto& Index = Toc.DirectoryIndex;
+            if (!ValidateMountPoint(Index.MountPoint)) {
+                printf("Bad mount point, mounting to root\n");
+            }
+            CompactFilePath(Index.MountPoint);
+
+            auto& MountDir = this->Index.CreateDirectories<false>(Index.MountPoint.c_str() + 1);
+
+            Append(Index, MountDir, Index.DirectoryEntries[0].FirstChildEntry);
         }
     }
 

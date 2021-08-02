@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../../Readers/Error.h"
 #include "../../../IKeyChain.h"
 #include "../Serialization/FArchive.h"
 #include "../Misc/FSHAHash.h"
@@ -28,6 +29,6 @@ namespace upp::Objects {
 
         FIoDirectoryIndexResource DirectoryIndex;
 
-        void Serialize(FArchive& Ar, const IKeyChain& KeyChain);
+        Readers::Error Serialize(FArchive& Ar, const IKeyChain& KeyChain);
     };
 }

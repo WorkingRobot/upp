@@ -17,7 +17,7 @@ namespace upp::Vfs {
             Data(&Data),
             IsADirectory(true)
         {
-
+            
         }
 
         explicit DirectoryEntry(const K& Name, const File& Data) :
@@ -150,8 +150,8 @@ namespace upp::Vfs {
 
         DirectoryEntry<K> Entry;
         const Directory<K>* Dir;
-        std::vector<std::pair<K, Directory<K>>>::const_iterator DirItr;
-        std::vector<std::pair<K, File>>::const_iterator FileItr;
+        decltype(Directory<K>::Directories.cbegin()) DirItr;
+        decltype(Directory<K>::Files.cbegin()) FileItr;
     };
 
     template<typename K>

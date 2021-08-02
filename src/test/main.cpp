@@ -32,13 +32,18 @@ class KeyChainImpl : public upp::IKeyChain {
     {
         // pakchunk9 = c078e51f6ec259767bf61fee58cd3c4c367e487d9dfd9ef1c2d504bbc97360ee
         // pakchunk0 = AB32BAB083F7D923A33AA768BC64B64BF62488948BD49FE61D95343492252558
-        static upp::Objects::FAESSchedule Key = KeyFromHex("447BBFD835ADFFF5BE68CFE5D93BF3A27A4641656A8C7F7F5051104F6C73E25E");
+        static upp::Objects::FAESSchedule KeyInvalid{};
+        static upp::Objects::FGuid GuidMain = GuidFromHex("00000000000000000000000000000000");
+        static upp::Objects::FAESSchedule KeyMain = KeyFromHex("447BBFD835ADFFF5BE68CFE5D93BF3A27A4641656A8C7F7F5051104F6C73E25E");
         static upp::Objects::FGuid Guid1006 = GuidFromHex("58388BA7BD1643A85EFD49BF26EF5912");
         static upp::Objects::FAESSchedule Key1006 = KeyFromHex("02BBB7DBB2491EC18A083D989504FE123CBADFFFEF972F4285374AB1F80BEF9A");
+        if (Guid == GuidMain) {
+            return KeyMain;
+        }
         if (Guid == Guid1006) {
             return Key1006;
         }
-        return Key;
+        return KeyInvalid;
     }
 };
 
@@ -61,25 +66,31 @@ int main() {
     upp::Objects::FFileArchive UsmapAr(R"(J:\misc cold storage\++Fortnite+Release-17.21-CL-16967001-Windows_oo.usmap)");
     Vfs.SetProvider<upp::Providers::UsmapProvider>(UsmapAr);
 
-    upp::Objects::FFileArchive TocAr(R"(D:\FortniteGame\Content\Paks\pakchunk1006-WindowsClient.utoc)");
-    upp::Objects::FFileArchive Ar(R"(D:\FortniteGame\Content\Paks\pakchunk1006-WindowsClient.ucas)");
+    std::error_code Code;
     {
-        auto Reader = Vfs.AddReaderIfValid<upp::Readers::IoReader>(Error, Ar, TocAr, KeyChain);
-        if (!Reader) {
-            printf("Error: %d\n", Error);
-            return 0;
-        }
-    }
+        auto Start = std::chrono::steady_clock::now();
+        for (auto& File : std::filesystem::directory_iterator(R"(D:\FortniteGame\Content\Paks\)", Code)) {
+            if (File.path().extension() == ".utoc") {
+                auto CasPath = File.path();
+                CasPath.replace_extension(".ucas");
+                if (!std::filesystem::exists(CasPath, Code)) {
+                    continue;
+                }
 
-    upp::Objects::FFileArchive TocArGlobal(R"(D:\FortniteGame\Content\Paks\global.utoc)");
-    upp::Objects::FFileArchive ArGlobal(R"(D:\FortniteGame\Content\Paks\global.ucas)");
-    {
-        auto Reader = Vfs.AddReaderIfValid<upp::Readers::IoReader>(Error, ArGlobal, TocArGlobal, KeyChain);
-        if (!Reader) {
-            printf("Error global: %d\n", Error);
-            return 0;
+                upp::Objects::FFileArchive TocAr(File);
+                upp::Objects::FFileArchive Ar(CasPath);
+                printf("%s\n", File.path().filename().string().c_str());
+                auto Reader = Vfs.AddReaderIfValid<upp::Readers::IoReader>(Error, Ar, TocAr, KeyChain);
+                if (!Reader) {
+                    printf("Error: %d\n", Error);
+                }
+            }
+            
         }
+        auto End = std::chrono::steady_clock::now();
+        printf("%.02f ms\n", (End - Start).count() / 1000000.);
     }
+    Iterate("", Vfs.GetRootDirectory());
 
     // /Game/Athena/Items/Cosmetics/Dances/EID_Quantity_39X5D
     // /Game/Catalog/NewDisplayAssets/DAv2_EID_Quantity_39X5D

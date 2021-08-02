@@ -3,11 +3,11 @@
 #include "../Serialization/FByteArchive.h"
 
 namespace upp::Objects {
-    void FIoStoreTocResource::Serialize(FArchive& Ar, const IKeyChain& KeyChain)
+    Readers::Error FIoStoreTocResource::Serialize(FArchive& Ar, const IKeyChain& KeyChain)
     {
         Ar >> Header;
         if (!Header.Magic.IsValid()) {
-            return;
+            return Readers::Error::InvalidTocHeader;
         }
 
         Ar.ReadBuffer(ChunkIds, Header.TocEntryCount);
@@ -44,9 +44,10 @@ namespace upp::Objects {
 
             if ((uint8_t)Header.ContainerFlags & (uint8_t)EIoContainerFlags::Encrypted) {
                 auto& Schedule = KeyChain.GetKey(Header.EncryptionKeyGuid);
-                if (Schedule.IsValid()) {
-                    Schedule.DecryptInPlace(IdxData.get(), Header.DirectoryIndexSize);
+                if (!Schedule.IsValid()) {
+                    return Readers::Error::InvalidAesKey;
                 }
+                Schedule.DecryptInPlace(IdxData.get(), Header.DirectoryIndexSize);
             }
 
             FByteArchive IdxAr(std::move(IdxData), Header.DirectoryIndexSize, Ar.GetName() + " Index");
@@ -61,5 +62,7 @@ namespace upp::Objects {
             Header.PartitionCount = 1;
             Header.PartitionSize = std::numeric_limits<uint64_t>::max();
         }
+
+        return Readers::Error::None;
     }
 }
