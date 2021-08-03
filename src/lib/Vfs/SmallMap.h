@@ -33,6 +33,10 @@ namespace upp::Vfs {
             return Data.end();
         }
 
+        auto size() const noexcept {
+            return Hashes.size();
+        }
+
         void reserve(int Size) {
             Hashes.reserve(Size);
             Data.reserve(Size);
@@ -138,6 +142,10 @@ namespace upp::Vfs {
             return Data.end();
         }
 
+        auto size() const noexcept {
+            return Data.size();
+        }
+
         void reserve(int Size) {
             Data.reserve(Size);
         }
@@ -169,6 +177,11 @@ namespace upp::Vfs {
         void Merge(typename SmallMap&& Other) {
             Data.reserve(Data.size() + Other.Data.size());
             Data.merge(std::move(Other.Data));
+        }
+
+        template<typename PredT>
+        size_t erase_if(PredT Pred) {
+            return std::erase_if(Data, Pred);
         }
 
         auto SearchValues(const char* KeyString, typename K::SizeT KeyStringSize) const {

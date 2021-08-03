@@ -1,7 +1,7 @@
 #include "../lib/Objects/Core/Serialization/FFileArchive.h"
 #include "../lib/Providers/UsmapProvider.h"
 #include "../lib/Readers/IoReader.h"
-#include "../lib/Readers/ThreadSafeArchive.h"
+#include "../lib/Readers/PakReader.h"
 #include "../lib/Vfs/Vfs.h"
 #include "../lib/Vfs/DirectoryIterator.h"
 
@@ -33,18 +33,16 @@ class KeyChainImpl : public upp::IKeyChain {
 
     const upp::Objects::FAESSchedule& GetKey(const upp::Objects::FGuid& Guid) const
     {
-        // pakchunk9 = c078e51f6ec259767bf61fee58cd3c4c367e487d9dfd9ef1c2d504bbc97360ee
-        // pakchunk0 = AB32BAB083F7D923A33AA768BC64B64BF62488948BD49FE61D95343492252558
         static upp::Objects::FAESSchedule KeyInvalid{};
         static upp::Objects::FGuid GuidMain = GuidFromHex("00000000000000000000000000000000");
-        static upp::Objects::FAESSchedule KeyMain = KeyFromHex("447BBFD835ADFFF5BE68CFE5D93BF3A27A4641656A8C7F7F5051104F6C73E25E");
-        static upp::Objects::FGuid Guid1006 = GuidFromHex("58388BA7BD1643A85EFD49BF26EF5912");
-        static upp::Objects::FAESSchedule Key1006 = KeyFromHex("02BBB7DBB2491EC18A083D989504FE123CBADFFFEF972F4285374AB1F80BEF9A");
+        static upp::Objects::FAESSchedule KeyMain = KeyFromHex("7DD830C5ACC92FE26653003ABECA10606F3492026A2C971283B2FA6B42DE8422");
+        static upp::Objects::FGuid Guid1005 = GuidFromHex("58388BA7BD1643A85EFD49BF26EF5912");
+        static upp::Objects::FAESSchedule Key1005 = KeyFromHex("02BBB7DBB2491EC18A083D989504FE123CBADFFFEF972F4285374AB1F80BEF9A");
         if (Guid == GuidMain) {
             return KeyMain;
         }
-        if (Guid == Guid1006) {
-            return Key1006;
+        if (Guid == Guid1005) {
+            return Key1005;
         }
         return KeyInvalid;
     }
@@ -70,26 +68,33 @@ int main() {
     Vfs.SetProvider<upp::Providers::UsmapProvider>(UsmapAr);
 
     std::error_code Code;
-    std::deque<upp::Objects::FFileArchive> CasArchives;
+    std::deque<upp::Objects::FFileArchive> Archives;
     {
         auto Start = std::chrono::steady_clock::now();
         for (auto& File : std::filesystem::directory_iterator(R"(D:\FortniteGame\Content\Paks\)", Code)) {
-            if (File.path().extension() == ".utoc") {
-                auto CasPath = File.path();
-                CasPath.replace_extension(".ucas");
-                if (!std::filesystem::exists(CasPath, Code)) {
+            if (File.path().extension() == ".ucas") {
+                auto TocPath = File.path();
+                TocPath.replace_extension(".utoc");
+                if (!std::filesystem::exists(TocPath, Code)) {
                     continue;
                 }
 
-                upp::Objects::FFileArchive TocAr(File);
-                auto& Ar = CasArchives.emplace_back(CasPath);
-                printf("%s\n", File.path().filename().string().c_str());
+                upp::Objects::FFileArchive TocAr(TocPath);
+                auto& Ar = Archives.emplace_back(File);
                 auto Reader = Vfs.AddReaderIfValid<upp::Readers::IoReader>(Error, Ar, TocAr, KeyChain);
-                if (!Reader) {
+                if (!Reader && Error != upp::Readers::Error::InvalidAesKey) {
+                    printf("%s\n", File.path().filename().string().c_str());
                     printf("Error: %d\n", Error);
                 }
             }
-            
+            else if (File.path().extension() == ".pak") {
+                auto& Ar = Archives.emplace_back(File);
+                auto Reader = Vfs.AddReaderIfValid<upp::Readers::PakReader>(Error, Ar, KeyChain);
+                if (!Reader && Error != upp::Readers::Error::InvalidAesKey) {
+                    printf("%s\n", File.path().filename().string().c_str());
+                    printf("Error: %d\n", Error);
+                }
+            }
         }
         auto End = std::chrono::steady_clock::now();
         printf("%.02f ms\n", (End - Start).count() / 1000000.);
@@ -99,73 +104,4 @@ int main() {
     // /Game/Athena/Items/Cosmetics/Dances/EID_Quantity_39X5D
     // /Game/Catalog/NewDisplayAssets/DAv2_EID_Quantity_39X5D
     //Vfs.GetPackage("/FortniteGame/Content/Packages/Fortress_Sky/SkyDome/Master/S_SkyDome01");
-    
-    std::mutex Mtx;
-    std::chrono::nanoseconds Min = std::chrono::nanoseconds::max(), Max = std::chrono::nanoseconds::min(), Total{};
-    std::atomic_flag Flag;
-
-    auto Inst = [&Flag, &Vfs, &Mtx, &Min, &Max, &Total]() {
-        Flag.wait(false);
-        auto Start = std::chrono::steady_clock::now();
-        auto Pkg = Vfs.GetPackage("/Game/Weapons/WeaponSkins/Wraps/Textures/BuffCatFan/T_Wrap_BuffCatFan_Decal");
-        auto End = std::chrono::steady_clock::now();
-
-        printf("%.02f ms\n", (End - Start).count() / 1000000.);
-        auto Ret = End - Start;
-        std::lock_guard Guard(Mtx);
-        Min = std::min(Ret, Min);
-        Max = std::max(Ret, Max);
-        Total += Ret;
-    };
-
-    printf("Creating\n");
-    std::vector<std::future<void>> Futures;
-    for (int i = 0; i < 1000; ++i) {
-        Futures.emplace_back(std::async(std::launch::async, Inst));
-    }
-
-    printf("Launching\n");
-    auto Start = std::chrono::steady_clock::now();
-    Flag.test_and_set();
-    Flag.notify_all();
-
-    printf("Waiting\n");
-    Futures.clear();
-    auto End = std::chrono::steady_clock::now();
-
-    printf("Min: %.02f ms\n", Min.count() / 1000000.);
-    printf("Max: %.02f ms\n", Max.count() / 1000000.);
-    printf("Avg: %.02f ms\n", Total.count() / 1000000. / 1000);
-    printf("Total: %.02f ms\n", (End - Start).count() / 1000000.);
-
-    printf("Done\n");
-    return 0;
-
-    for (int i = 0; i < 5000; ++i) {
-        auto Start = std::chrono::steady_clock::now();
-        auto Pkg = Vfs.GetPackage("/Game/Weapons/WeaponSkins/Wraps/Textures/BuffCatFan/T_Wrap_BuffCatFan_Decal");
-        auto End = std::chrono::steady_clock::now();
-        printf("%.02f ms\n", (End - Start).count() / 1000000.);
-    }
-    return 0;
-
-    Iterate("", Vfs.GetRootDirectory()); 
-
-    for (auto& Entry : upp::Vfs::RecursiveDirectoryIterator(Vfs.GetRootDirectory())) {
-        if (!Entry.IsFile()) {
-            continue;
-        }
-
-        auto ArPtr = Vfs.GetFile(*Entry.GetFile());
-        if (ArPtr) {
-            auto f = fopen((std::to_string(Entry.GetFile()->GetReaderIdx()) + "-" + std::to_string(Entry.GetFile()->GetFileIdx()) + ".f").c_str(), "wb");
-            auto buf = std::make_unique<char[]>(ArPtr->Size());
-            ArPtr->Read(buf.get(), ArPtr->Size());
-            fwrite(buf.get(), 1, ArPtr->Size(), f);
-            fclose(f);
-        }
-        else {
-            printf("Could not open %u\n", Entry.GetFile()->GetFileIdx());
-        }
-    }
 }

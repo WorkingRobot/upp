@@ -57,7 +57,7 @@ namespace upp::Readers {
         return std::make_unique<FIoArchive>(FileIdx, *this);
     }
 
-    void IoReader::Append(Vfs::Vfs& Vfs)
+    void IoReader::Append(Vfs::Vfs& Vfs, bool TranslatePaths)
     {
         if (HasError()) {
             return;
@@ -65,7 +65,7 @@ namespace upp::Readers {
 
         // Only the global store does not have a container id attached
         if (ContainerId.IsValid()) {
-            Vfs.GetRootDirectory().MergeDirectory<true>(std::move(Index));
+            MergeDirectory(Vfs, TranslatePaths, std::move(Index));
         }
         else {
             auto NamesIdx = GetChunkIdx(FIoChunkId(0, 0, EIoChunkType::LoaderGlobalNames));
@@ -117,10 +117,7 @@ namespace upp::Readers {
 
         if ((uint8_t)Toc.Header.ContainerFlags & (uint8_t)EIoContainerFlags::Indexed && Toc.Header.DirectoryIndexSize != 0) {
             auto& Index = Toc.DirectoryIndex;
-            if (!ValidateMountPoint(Index.MountPoint)) {
-                printf("Bad mount point, mounting to root\n");
-            }
-            CompactFilePath(Index.MountPoint);
+            ValidateMountPoint(Index.MountPoint);
 
             auto& MountDir = this->Index.CreateDirectories<false>(Index.MountPoint.c_str() + 1);
 

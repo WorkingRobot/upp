@@ -1,5 +1,8 @@
 #include "BaseReader.h"
 
+#include "../Vfs/DirectoryIterator.h"
+#include "../Vfs/Vfs.h"
+
 namespace upp::Readers {
     BaseReader::BaseReader(Objects::FArchive& Archive, const IKeyChain& KeyChain, uint32_t ReaderIdx) :
         Ar(Archive),
@@ -56,30 +59,45 @@ namespace upp::Readers {
         return true;
     }
 
-    void BaseReader::CompactFilePath(std::string& Path)
+    void BaseReader::MergeDirectory(Vfs::Vfs& Vfs, bool TranslatePaths, Vfs::Directory<>&& Directory)
     {
-        if (Path[0] != '/') {
-            return;
-        }
-        else if (Path.starts_with("/Engine/Content")) { // -> /Engine
-            Path.erase(7, 8);
-        }
-        else if (Path.starts_with("/Engine/Plugins")) { // -> /Plugins
-            Path.erase(0, 7);
-        }
-        else {
-            auto SepPos = Path.find('/', 1);
-            if (SepPos == std::string::npos) {
-                return;
-            }
-            if (Path.compare(SepPos, 9, "/Content/") != 0) {
-                return;
-            }
+        auto& Root = Vfs.GetRootDirectory();
 
-            if (SepPos > 4) {
-                // /FortniteGame/Content -> /Game
-                Path.replace(1, SepPos + 7, "Game");
-            }
+        // "/Engine/Content" is redirected to /Engine
+        // "/Engine/Plugins" is redirected to /Plugins
+        // "/..../Content" is redirected to /Game
+        if (TranslatePaths){
+            Directory.Directories.erase_if([&Root](decltype(*Directory.Directories.begin())& Dir) {
+                if (Dir.first == "Engine") {
+                    Dir.second.Directories.erase_if([&Root](auto& EngineDir) {
+                        if (EngineDir.first == "Content") {
+                            auto& TargetDir = Root.CreateDirectory<true>("Engine", 6);
+                            TargetDir.MergeDirectory<true>(std::move(EngineDir.second));
+                            return true;
+                        }
+                        else if (EngineDir.first == "Plugins") {
+                            auto& TargetDir = Root.CreateDirectory<true>("Plugins", 7);
+                            TargetDir.MergeDirectory<true>(std::move(EngineDir.second));
+                            return true;
+                        }
+                        return false;
+                    });
+                }
+                else if (Dir.first.GetSize() >= 4) {
+                    Dir.second.Directories.erase_if([&Root](auto& GameDir) {
+                        if (GameDir.first == "Content") {
+                            auto& TargetDir = Root.CreateDirectory<true>("Game", 4);
+                            TargetDir.MergeDirectory<true>(std::move(GameDir.second));
+                            return true;
+                        }
+                        return false;
+                    });
+                }
+
+                return Dir.second.Directories.size() == 0 && Dir.second.Files.size() == 0;
+            });
         }
+
+        Root.MergeDirectory<true>(std::move(Directory));
     }
 }

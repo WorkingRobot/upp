@@ -4,6 +4,10 @@
 #include "File.h"
 #include "SmallMap.h"
 
+namespace upp::Readers {
+    class BaseReader;
+}
+
 namespace upp::Vfs {
     template<typename K = CStringKey<true>>
     class Directory {
@@ -76,5 +80,6 @@ namespace upp::Vfs {
         friend class DirectoryIterator;
         template<typename T>
         friend class RecursiveDirectoryIterator;
+        friend class Readers::BaseReader;
     };
 }

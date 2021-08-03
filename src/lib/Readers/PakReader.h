@@ -25,7 +25,7 @@ namespace upp::Readers {
 
         std::unique_ptr<Objects::UPackage> ExportPackage(uint32_t AssetIdx, Vfs::Vfs& Vfs) override;
 
-        void Append(Vfs::Vfs& Vfs) override;
+        void Append(Vfs::Vfs& Vfs, bool TranslatePaths) override;
 
     private:
         friend class upp::Objects::FPakArchiveReaderBase;

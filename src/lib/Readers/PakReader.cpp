@@ -94,13 +94,13 @@ namespace upp::Readers {
         return nullptr;
     }
 
-    void PakReader::Append(Vfs::Vfs& Vfs)
+    void PakReader::Append(Vfs::Vfs& Vfs, bool TranslatePaths)
     {
         if (HasError()) {
             return;
         }
 
-        Vfs.GetRootDirectory().MergeDirectory<true>(std::move(Index));
+        MergeDirectory(Vfs, TranslatePaths, std::move(Index));
     }
 
     const Objects::FAESSchedule& PakReader::GetSchedule() const
@@ -221,10 +221,7 @@ namespace upp::Readers {
 
         std::string MountPoint;
         IndexAr >> MountPoint;
-        if (!ValidateMountPoint(MountPoint)) {
-            printf("Bad mount point, mounting to root\n");
-        }
-        CompactFilePath(MountPoint);
+        ValidateMountPoint(MountPoint);
 
         int NumEntries;
         IndexAr >> NumEntries;
@@ -307,8 +304,6 @@ namespace upp::Readers {
         if (!ValidateMountPoint(MountPoint)) {
             printf("Bad mount point, mounting to root\n");
         }
-
-        CompactFilePath(MountPoint);
 
         auto& MountDir = Index.CreateDirectories<true>(MountPoint.c_str() + 1);
 

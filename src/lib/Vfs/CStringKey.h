@@ -36,6 +36,10 @@ namespace upp::Vfs {
             return GetSize() == Size && memcmp(Str, GetString(), Size) == 0;
         }
 
+        bool operator==(const std::string_view& Key) const {
+            return compare(Key.data(), Key.size());
+        }
+
         bool operator==(const CStringKey& Key) const {
             return compare(Key.GetString(), Key.GetSize());
         }
