@@ -79,14 +79,14 @@ namespace upp::Objects {
             static constexpr auto AlignmentMask = ~(Alignment - 1);
 
             auto& Ar = GetAr();
+            // Offset is unaligned, read previous block and copy the data we want at the start
             if (EncryptionImpl::Align(DesiredOffset) != DesiredOffset) {
                 auto Start = DesiredOffset & AlignmentMask;
                 auto Offset = DesiredOffset - Start;
                 auto CopySize = std::min(Alignment - Offset, Size);
 
-                Ar.Seek(GetFileOffset() + Start, ESeekDir::Beg);
                 char CachedBlockBuffer[Alignment];
-                Ar.Read(CachedBlockBuffer, Alignment);
+                Ar.PRead(CachedBlockBuffer, Alignment, GetFileOffset() + Start);
                 EncryptionImpl::DecryptBlock(CachedBlockBuffer, Alignment, GetSchedule());
                 memcpy(Data, CachedBlockBuffer + Offset, CopySize);
 
@@ -94,19 +94,16 @@ namespace upp::Objects {
                 DesiredOffset += CopySize;
                 Size -= CopySize;
             }
-            else {
-                Ar.Seek(GetFileOffset() + DesiredOffset, ESeekDir::Beg);
-            }
 
             auto CopySize = Size & AlignmentMask;
-            Ar.Read(Data, CopySize);
+            Ar.PRead(Data, CopySize, GetFileOffset() + DesiredOffset);
             EncryptionImpl::DecryptBlock(Data, CopySize, GetSchedule());
             Size -= CopySize;
             Data += CopySize;
 
             if (Size > 0) {
                 char CachedBlockBuffer[Alignment];
-                Ar.Read(CachedBlockBuffer, Alignment);
+                Ar.PRead(CachedBlockBuffer, Alignment, GetFileOffset() + DesiredOffset + CopySize);
                 EncryptionImpl::DecryptBlock(CachedBlockBuffer, Alignment, GetSchedule());
                 memcpy(Data, CachedBlockBuffer, Size);
             }
@@ -178,8 +175,7 @@ namespace upp::Objects {
                 }
                 else {
                     int64_t EncryptionSize = EncryptionImpl::Align(CompressedBlockSize);
-                    Ar.Seek(Block.CompressedStart + (PakFile.GetPakInfo().Version >= EPakVersion::RelativeChunkOffsets ? Entry.Offset : 0), ESeekDir::Beg);
-                    Ar.Read(CompBuffer.get(), EncryptionSize);
+                    Ar.PRead(CompBuffer.get(), EncryptionSize, Block.CompressedStart + (PakFile.GetPakInfo().Version >= EPakVersion::RelativeChunkOffsets ? Entry.Offset : 0));
 
                     EncryptionImpl::DecryptBlock(CompBuffer.get(), EncryptionSize, GetSchedule());
                     if (BlockCopyStart == 0 && Size >= Entry.CompressionBlockSize) {

@@ -57,4 +57,13 @@ namespace upp::Objects {
             return Position;
         }
     }
+
+    size_t FPakArchive::PRead(char* Data, size_t Size, size_t Offset)
+    {
+        if (Offset + Size > this->Size()) [[unlikely]] {
+            Size = this->Size() - Offset;
+        }
+        Impl->Read(Data, Size, Offset);
+        return Size;
+    }
 }

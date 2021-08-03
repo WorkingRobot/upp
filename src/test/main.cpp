@@ -1,8 +1,11 @@
 #include "../lib/Objects/Core/Serialization/FFileArchive.h"
 #include "../lib/Providers/UsmapProvider.h"
 #include "../lib/Readers/IoReader.h"
+#include "../lib/Readers/ThreadSafeArchive.h"
 #include "../lib/Vfs/Vfs.h"
 #include "../lib/Vfs/DirectoryIterator.h"
+
+#include <future>
 
 class KeyChainImpl : public upp::IKeyChain {
     static upp::Objects::FGuid GuidFromHex(const char Hex[32]) {
@@ -67,6 +70,7 @@ int main() {
     Vfs.SetProvider<upp::Providers::UsmapProvider>(UsmapAr);
 
     std::error_code Code;
+    std::deque<upp::Readers::ThreadSafeArchive<upp::Objects::FFileArchive>> CasArchives;
     {
         auto Start = std::chrono::steady_clock::now();
         for (auto& File : std::filesystem::directory_iterator(R"(D:\FortniteGame\Content\Paks\)", Code)) {
@@ -78,7 +82,7 @@ int main() {
                 }
 
                 upp::Objects::FFileArchive TocAr(File);
-                upp::Objects::FFileArchive Ar(CasPath);
+                auto& Ar = CasArchives.emplace_back(CasPath);
                 printf("%s\n", File.path().filename().string().c_str());
                 auto Reader = Vfs.AddReaderIfValid<upp::Readers::IoReader>(Error, Ar, TocAr, KeyChain);
                 if (!Reader) {
@@ -90,12 +94,53 @@ int main() {
         auto End = std::chrono::steady_clock::now();
         printf("%.02f ms\n", (End - Start).count() / 1000000.);
     }
-    Iterate("", Vfs.GetRootDirectory());
+    // Iterate("", Vfs.GetRootDirectory());
 
     // /Game/Athena/Items/Cosmetics/Dances/EID_Quantity_39X5D
     // /Game/Catalog/NewDisplayAssets/DAv2_EID_Quantity_39X5D
     //Vfs.GetPackage("/FortniteGame/Content/Packages/Fortress_Sky/SkyDome/Master/S_SkyDome01");
     
+    std::mutex Mtx;
+    std::chrono::nanoseconds Min = std::chrono::nanoseconds::max(), Max = std::chrono::nanoseconds::min(), Total{};
+    std::atomic_flag Flag;
+
+    auto Inst = [&Flag, &Vfs, &Mtx, &Min, &Max, &Total]() {
+        Flag.wait(false);
+        auto Start = std::chrono::steady_clock::now();
+        auto Pkg = Vfs.GetPackage("/Game/Weapons/WeaponSkins/Wraps/Textures/BuffCatFan/T_Wrap_BuffCatFan_Decal");
+        auto End = std::chrono::steady_clock::now();
+
+        printf("%.02f ms\n", (End - Start).count() / 1000000.);
+        auto Ret = End - Start;
+        std::lock_guard Guard(Mtx);
+        Min = std::min(Ret, Min);
+        Max = std::max(Ret, Max);
+        Total += Ret;
+    };
+
+    printf("Creating\n");
+    std::vector<std::future<void>> Futures;
+    for (int i = 0; i < 1000; ++i) {
+        Futures.emplace_back(std::async(std::launch::async, Inst));
+    }
+
+    printf("Launching\n");
+    auto Start = std::chrono::steady_clock::now();
+    Flag.test_and_set();
+    Flag.notify_all();
+
+    printf("Waiting\n");
+    Futures.clear();
+    auto End = std::chrono::steady_clock::now();
+
+    printf("Min: %.02f ms\n", Min.count() / 1000000.);
+    printf("Max: %.02f ms\n", Max.count() / 1000000.);
+    printf("Avg: %.02f ms\n", Total.count() / 1000000. / 1000);
+    printf("Total: %.02f ms\n", (End - Start).count() / 1000000.);
+
+    printf("Done\n");
+    return 0;
+
     for (int i = 0; i < 5000; ++i) {
         auto Start = std::chrono::steady_clock::now();
         auto Pkg = Vfs.GetPackage("/Game/Weapons/WeaponSkins/Wraps/Textures/BuffCatFan/T_Wrap_BuffCatFan_Decal");

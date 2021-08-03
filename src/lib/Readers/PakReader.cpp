@@ -111,8 +111,7 @@ namespace upp::Readers {
     std::unique_ptr<char[]> PakReader::GetIndexArchive(int64_t Offset, int64_t Size, const FSHAHash& Hash)
     {
         auto Data = std::make_unique<char[]>(Size);
-        Ar.Seek(Offset, ESeekDir::Beg);
-        Ar.Read(Data.get(), Size);
+        Ar.PRead(Data.get(), Size, Offset);
 
         if (Info.IsEncryptedIndex) {
             auto& Schedule = GetSchedule();

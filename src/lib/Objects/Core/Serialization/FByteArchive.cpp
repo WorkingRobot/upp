@@ -43,4 +43,13 @@ namespace upp::Objects {
             return Position;
         }
     }
+
+    size_t FByteArchive::PRead(char* Data, size_t Size, size_t Offset)
+    {
+        if (Offset + Size > DataSize) [[unlikely]] {
+            Size = DataSize - Offset;
+        }
+        memcpy(Data, this->Data.get() + Offset, Size);
+        return Size;
+    }
 }

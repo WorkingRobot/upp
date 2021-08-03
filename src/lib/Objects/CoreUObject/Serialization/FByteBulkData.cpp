@@ -47,23 +47,20 @@ namespace upp::Objects {
             auto DataArPtr = Ctx.GetSiblingArchive("uptnl");
             if (DataArPtr) {
                 Data = std::make_unique<char[]>(BulkDataSize);
-                DataArPtr->Read(Data.get(), BulkDataSize);
+                DataArPtr->PRead(Data.get(), BulkDataSize, BulkDataOffset);
             }
         }
         else if ((uint32_t)BulkDataFlags & (uint32_t)EBulkDataFlags::BULKDATA_PayloadInSeperateFile) {
             auto DataArPtr = Ctx.GetSiblingArchive("ubulk");
             if (DataArPtr) {
                 Data = std::make_unique<char[]>(BulkDataSize);
-                DataArPtr->Read(Data.get(), BulkDataSize);
+                DataArPtr->PRead(Data.get(), BulkDataSize, BulkDataOffset);
             }
         }
-        // only used in uexp files, so this is never actually called (it's technically also broken atm)
+        // only used in uexp files, so this is never actually called
         else if ((uint32_t)BulkDataFlags & (uint32_t)EBulkDataFlags::BULKDATA_PayloadAtEndOfFile) {
-            auto Pos = Ar.Tell();
             Data = std::make_unique<char[]>(BulkDataSize);
-            Ar.Seek(BulkDataOffset, ESeekDir::Beg);
-            Ar.Read(Data.get(), BulkDataSize);
-            Ar.Seek(Pos, ESeekDir::Beg);
+            Ar.PRead(Data.get(), BulkDataSize, BulkDataOffset);
         }
     }
 }

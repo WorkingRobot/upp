@@ -20,6 +20,16 @@ namespace upp::Objects {
 
         virtual size_t Seek(ptrdiff_t Offset, ESeekDir Direction) = 0;
 
+        virtual size_t PRead(char* Data, size_t Size, size_t Offset)
+        {
+            // Not using a mutex here because there's no reason to add extra overhead (instead, use a wrapper or override it yourself)
+            auto Pos = Tell();
+            Seek(Offset, ESeekDir::Beg);
+            auto Ret = Read(Data, Size);
+            Seek(Pos, ESeekDir::Beg);
+            return Ret;
+        }
+
         // Public functions
     public:
         virtual ~FArchive() = default;
@@ -187,14 +197,12 @@ namespace upp::Objects {
         }
 
         void Dump(const char* Path) {
-            auto o = Tell();
-            auto f = fopen(Path, "wb");
             auto b = std::make_unique<char[]>(Size());
-            Seek(0, ESeekDir::Beg);
-            Read(b.get(), Size());
+            PRead(b.get(), Size(), 0);
+
+            auto f = fopen(Path, "wb");
             fwrite(b.get(), Size(), 1, f);
             fclose(f);
-            Seek(o, ESeekDir::Beg);
         }
 
     protected:

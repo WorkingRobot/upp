@@ -50,6 +50,15 @@ namespace upp::Objects {
         }
     }
 
+    size_t FIoArchive::PRead(char* Data, size_t Size, size_t Offset)
+    {
+        if (Offset + Size > this->Size()) [[unlikely]] {
+            Size = this->Size() - Offset;
+        }
+        Read(Data, Size, Offset);
+        return Size;
+    }
+
     uint64_t FIoArchive::GetOffset() const
     {
         return Reader.ChunkOffsetLengths[ChunkIdx].GetOffset();
@@ -104,8 +113,7 @@ namespace upp::Objects {
                 if (PartitionIdx != 0) {
                     printf("nonzero partition offset!\n");
                 }
-                Ar.Seek(PartitionOffset, ESeekDir::Beg);
-                Ar.Read(CompBuffer.get(), EncryptionSize);
+                Ar.PRead(CompBuffer.get(), EncryptionSize, PartitionOffset);
 
                 if ((uint8_t)Reader.ContainerFlags & (uint8_t)EIoContainerFlags::Encrypted) {
                     Reader.GetSchedule().DecryptInPlace(CompBuffer.get(), EncryptionSize);

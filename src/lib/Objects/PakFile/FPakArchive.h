@@ -16,6 +16,8 @@ namespace upp::Objects {
 
         size_t Seek(ptrdiff_t Offset, ESeekDir Direction) override;
 
+        size_t PRead(char* Data, size_t Size, size_t Offset) override;
+
     private:
         std::unique_ptr<FPakArchiveReaderBase> Impl;
 
