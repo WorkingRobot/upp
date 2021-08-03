@@ -281,7 +281,7 @@ namespace upp::Readers {
             if (Dir.second.empty()) {
                 continue;
             }
-            auto& VfsDir = MountDir.CreateDirectories<true>(Dir.first.c_str());
+            auto& VfsDir = Dir.first == "/" ? MountDir : MountDir.CreateDirectories<true>(Dir.first.c_str());
             for (auto& File : Dir.second) {
                 VfsDir.CreateFile<false>(File.first.c_str(), File.first.size(), Vfs::File(GetReaderIdx(), File.second.Index));
             }
@@ -297,13 +297,11 @@ namespace upp::Readers {
         FByteArchive IndexAr(std::move(IndexData), Info.IndexSize, Ar.GetName() + " Index");
 
         std::string MountPoint;
-        int NumEntries;
         IndexAr >> MountPoint;
-        IndexAr >> NumEntries;
+        ValidateMountPoint(MountPoint);
 
-        if (!ValidateMountPoint(MountPoint)) {
-            printf("Bad mount point, mounting to root\n");
-        }
+        int NumEntries;
+        IndexAr >> NumEntries;
 
         auto& MountDir = Index.CreateDirectories<true>(MountPoint.c_str() + 1);
 
