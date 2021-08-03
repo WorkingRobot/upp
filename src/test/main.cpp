@@ -70,7 +70,7 @@ int main() {
     Vfs.SetProvider<upp::Providers::UsmapProvider>(UsmapAr);
 
     std::error_code Code;
-    std::deque<upp::Readers::ThreadSafeArchive<upp::Objects::FFileArchive>> CasArchives;
+    std::deque<upp::Objects::FFileArchive> CasArchives;
     {
         auto Start = std::chrono::steady_clock::now();
         for (auto& File : std::filesystem::directory_iterator(R"(D:\FortniteGame\Content\Paks\)", Code)) {
