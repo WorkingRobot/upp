@@ -54,7 +54,7 @@ namespace upp::Readers {
         auto& Entry = Header.StoreEntries[Dist];
 
         auto AssetArPtr = OpenFile(AssetIdx);
-        if (AssetArPtr == nullptr) {
+        if (!AssetArPtr) {
             return nullptr;
         }
         FIoArchive& AssetAr = (FIoArchive&)*AssetArPtr;
@@ -116,6 +116,11 @@ namespace upp::Readers {
                     //bool Unversioned = ((uint32_t)Summary.PackageFlags & (uint32_t)EPackageFlags::PKG_UnversionedProperties) != 0;
                     ExportAr.Seek(ExportOffset, ESeekDir::Beg);
                     Ret->Exports[Bundle.LocalExportIndex] = UObject::SerializeUnversioned(ExportAr, ClassName, Ctx, (uint32_t)Export.ObjectFlags & (uint32_t)EObjectFlags::RF_ClassDefaultObject);
+#ifdef _DEBUG
+                    if (ExportAr.Tell() != ExportOffset + Export.CookedSerialSize) {
+                        _CrtDbgBreak();
+                    }
+#endif
                     //printf("%s %s %zu %zu\n", ObjectName.c_str(), ClassName.c_str(), ExportOffset, Export.CookedSerialOffset);
                     ExportOffset += Export.CookedSerialSize;
                 }

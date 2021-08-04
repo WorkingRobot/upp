@@ -4,6 +4,8 @@
 #include "../../Engine/Engine/UCurveTable.h"
 #include "../../Engine/Engine/UDataTable.h"
 #include "../../Engine/Engine/UTexture2D.h"
+#include "../../Engine/Engine/UTextureCube.h"
+#include "../../Engine/Engine/UVolumeTexture.h"
 #include "../Serialization/FIterator.h"
 
 #include <numeric>
@@ -43,6 +45,8 @@ namespace upp::Objects {
         CASE("CurveTable", UCurveTable);
         CASE("DataTable", UDataTable);
         CASE("Texture2D", UTexture2D);
+        CASE("TextureCube", UTextureCube);
+        CASE("VolumeTexture", UVolumeTexture);
 
 #undef CASE
         default: return std::unique_ptr<UObject>(new UObject(Ar, *SchemaPtr, IsCDO));
