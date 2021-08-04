@@ -6,6 +6,7 @@
 #include "../../Engine/Engine/UTexture2D.h"
 #include "../../Engine/Engine/UTextureCube.h"
 #include "../../Engine/Engine/UVolumeTexture.h"
+#include "../../Engine/Sound/USoundWave.h"
 #include "../Serialization/FIterator.h"
 
 #include <numeric>
@@ -44,6 +45,7 @@ namespace upp::Objects {
 
         CASE("CurveTable", UCurveTable);
         CASE("DataTable", UDataTable);
+        CASE("SoundWave", USoundWave);
         CASE("Texture2D", UTexture2D);
         CASE("TextureCube", UTextureCube);
         CASE("VolumeTexture", UVolumeTexture);
