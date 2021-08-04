@@ -16,6 +16,8 @@ namespace upp::Objects {
 
         UObject(FArchive& Ar, const Providers::Schema& Schema, bool IsCDO = true);
 
+        virtual ~UObject() = default;
+
         const FProperty* GetProperty(uint32_t SchemaIdx) const;
 
         const FProperty* GetProperty(const std::string& Name) const;
