@@ -64,7 +64,7 @@ int main() {
     upp::Readers::Error Error;
     KeyChainImpl KeyChain;
 
-    upp::Objects::FFileArchive UsmapAr(R"(J:\misc cold storage\++Fortnite+Release-17.21-CL-16967001-Windows_oo.usmap)");
+    upp::Objects::FFileArchive UsmapAr(R"(J:\misc cold storage\++Fortnite+Release-17.30-CL-17004569-Windows_oo.usmap)");
     Vfs.SetProvider<upp::Providers::UsmapProvider>(UsmapAr);
 
     std::error_code Code;
@@ -99,9 +99,8 @@ int main() {
         auto End = std::chrono::steady_clock::now();
         printf("%.02f ms\n", (End - Start).count() / 1000000.);
     }
-    // Iterate("", Vfs.GetRootDirectory());
+    Vfs.GetPackage("/FortniteGame/Content/Athena/AI/Phoebe/ManagerData/AILootOnDeathDataTable");
 
     // /Game/Athena/Items/Cosmetics/Dances/EID_Quantity_39X5D
     // /Game/Catalog/NewDisplayAssets/DAv2_EID_Quantity_39X5D
-    //Vfs.GetPackage("/FortniteGame/Content/Packages/Fortress_Sky/SkyDome/Master/S_SkyDome01");
 }

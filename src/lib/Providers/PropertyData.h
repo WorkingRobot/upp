@@ -11,8 +11,7 @@ namespace upp::Providers {
                 const struct Enum* Enum;
             } Enum;
             struct StructData {
-                std::reference_wrapper<Name> StructType;
-                const struct Schema* StructSchema;
+                const struct Schema* Schema;
             } Struct;
             struct ArrayData {
                 std::unique_ptr<PropertyData> InnerType;
@@ -69,8 +68,7 @@ namespace upp::Providers {
                 Data.Enum.Enum = Other.Data.Enum.Enum;
                 break;
             case EPropertyType::StructProperty:
-                Data.Struct.StructType = Other.Data.Struct.StructType;
-                Data.Struct.StructSchema = Other.Data.Struct.StructSchema;
+                Data.Struct.Schema = Other.Data.Struct.Schema;
                 break;
             case EPropertyType::SetProperty:
             case EPropertyType::ArrayProperty:

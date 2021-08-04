@@ -35,6 +35,7 @@ namespace upp::Providers {
     struct UsmapProvider::LUT {
         MiniLUT<uint32_t, Schema> Schemas;
         MiniLUT<uint32_t, Enum> Enums;
+        mutable std::vector<decltype(PropertyData().GetData().Struct)*> SchemasToMap;
     };
 
     UsmapProvider::UsmapProvider(FArchive& Ar)
@@ -146,6 +147,13 @@ namespace upp::Providers {
                 LUT.Schemas.Add(SchemaNameIdx, Schema);
             }
         }
+
+        // Map StructProperty data to schemas
+        {
+            for (auto& Struct : LUT.SchemasToMap) {
+                Struct->Schema = LUT.Schemas.Get(uint32_t((size_t)Struct->Schema));
+            }
+        }
     }
 
     void UsmapProvider::SerializePropData(Objects::FArchive& Ar, PropertyData& PropData, const LUT& LUT)
@@ -169,8 +177,9 @@ namespace upp::Providers {
         {
             uint32_t Idx;
             Ar >> Idx;
-            Data.Struct.StructType = Names[Idx];
-            Data.Struct.StructSchema = LUT.Schemas.Get(Idx);
+            // The name pointer will get replaced with an actual schema pointer in the end
+            Data.Struct.Schema = (const Schema*)size_t(Idx);
+            LUT.SchemasToMap.emplace_back(&Data.Struct);
             break;
         }
         case EPropertyType::SetProperty:

@@ -1,13 +1,15 @@
 #include "UObject.h"
 
 #include "../../../Vfs/Vfs.h"
+#include "../../Engine/Engine/UCurveTable.h"
+#include "../../Engine/Engine/UDataTable.h"
 #include "../../Engine/Engine/UTexture2D.h"
 #include "../Serialization/FIterator.h"
 
 #include <numeric>
 
 namespace upp::Objects {
-    const Providers::Property* GetProperty(const Providers::Schema& Schema, uint16_t SchemaIdx)
+    const Providers::Property* GetSchemaProperty(const Providers::Schema& Schema, uint16_t SchemaIdx)
     {
         auto Itr = std::find_if(Schema.Properties.begin(), Schema.Properties.end(), [SchemaIdx](const auto& Prop) {
             return Prop.SchemaIdx == SchemaIdx;
@@ -17,7 +19,7 @@ namespace upp::Objects {
             return &*Itr;
         }
         if (Schema.SuperType) {
-            return GetProperty(*Schema.SuperType, SchemaIdx - Schema.PropCount);
+            return GetSchemaProperty(*Schema.SuperType, SchemaIdx - Schema.PropCount);
         }
         return nullptr;
     }
@@ -38,6 +40,8 @@ namespace upp::Objects {
         {
 #define CASE(Name, Type) case Crc32(Name): return std::make_unique<Type>(Ar, *SchemaPtr, Ctx, IsCDO)
 
+        CASE("CurveTable", UCurveTable);
+        CASE("DataTable", UDataTable);
         CASE("Texture2D", UTexture2D);
 
 #undef CASE
@@ -56,9 +60,9 @@ namespace upp::Objects {
         FIterator Itr(Header);
         if (Itr.IsValid()) {
             do {
-                auto PropInfo = GetProperty(Schema, Itr.GetSchemaIdx());
+                auto PropInfo = GetSchemaProperty(Schema, Itr.GetSchemaIdx());
                 if (PropInfo) {
-                    Properties.emplace_back(Ar, *PropInfo, Itr.IsNonZero() ? EReadType::Normal : EReadType::Zero);
+                    Properties.emplace_back(std::piecewise_construct, std::forward_as_tuple(Itr.GetSchemaIdx()), std::forward_as_tuple(Ar, *PropInfo, Itr.IsNonZero() ? EReadType::Normal : EReadType::Zero));
                 }
                 // Could not get property info
                 else {
@@ -78,5 +82,33 @@ namespace upp::Objects {
                 Ar >> Guid;
             }
         }
+    }
+
+    const FProperty* UObject::GetProperty(uint32_t SchemaIdx) const
+    {
+        auto Itr = std::find_if(Properties.begin(), Properties.end(), [SchemaIdx](const auto& Prop) {
+            return Prop.first == SchemaIdx;
+        });
+        return Itr != Properties.end() ? &Itr->second : nullptr;
+    }
+
+    uint32_t GetSchemaIdx(const Providers::Schema& Schema, const std::string& Name)
+    {
+        auto Itr = std::find_if(Schema.Properties.begin(), Schema.Properties.end(), [&Name](const auto& Prop) {
+            return Prop.Name == Name;
+        });
+        if (Itr != Schema.Properties.end()) {
+            return Itr->SchemaIdx;
+        }
+        if (Schema.SuperType) {
+            return Schema.PropCount + GetSchemaIdx(*Schema.SuperType, Name);
+        }
+        return -1;
+    }
+
+    const FProperty* UObject::GetProperty(const std::string& Name) const
+    {
+        auto SchemaIdx = GetSchemaIdx(Schema, Name);
+        return SchemaIdx != -1 ? GetProperty(SchemaIdx) : nullptr;
     }
 }

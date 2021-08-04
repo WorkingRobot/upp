@@ -5,6 +5,8 @@
 #include "../../../Core/Math/FIntPoint.h"
 #include "../../../Core/Math/FLinearColor.h"
 #include "../../../Core/Misc/FGuid.h"
+#include "../../../Engine/Curves/FRichCurveKey.h"
+#include "../../../Engine/Curves/FSimpleCurveKey.h"
 #include "../../../GameplayTags/FGameplayTagContainer.h"
 #include "../UObject.h"
 #include "BaseProperty.h"
@@ -12,7 +14,7 @@
 namespace upp::Objects {
     StructProperty::BaseProperty(FArchive& Ar, const FPropertyTag& Tag, EReadType ReadType)
     {
-        auto& StructType = Tag.TagData.GetData().Struct.StructType.get();
+        auto& StructType = Tag.TagData.GetData().Struct.Schema->Name;
         switch (Crc32(StructType.GetString(), StructType.GetSize()))
         {
 #define CASE(Name, Type) case Crc32(Name): { auto& Data = Value.emplace<Type>(); if (ReadType != EReadType::Zero) { Ar >> Data; } break; }
@@ -21,10 +23,12 @@ namespace upp::Objects {
             CASE("Guid", FGuid);
             CASE("IntPoint", FIntPoint);
             CASE("LinearColor", FLinearColor);
+            CASE("RichCurveKey", FRichCurveKey);
+            CASE("SimpleCurveKey", FSimpleCurveKey);
 
 #undef CASE
 #ifdef _DEBUG
-#define CASE(Name) case Crc32(Name): { printf("No parser written for " Name "!\n"); goto DefaultCase; }
+#define CASE(Name) case Crc32(Name): { printf("No parser written for " Name "!\n"); _CrtDbgBreak(); goto DefaultCase; }
 
             CASE("Box");
             CASE("Box2D");
@@ -35,8 +39,6 @@ namespace upp::Objects {
             CASE("FrameNumber");
             CASE("NavAgentSelector");
             CASE("SmartName");
-            CASE("RichCurveKey");
-            CASE("SimpleCurveKey");
             CASE("ScalarMaterialInput");
             CASE("ShadingModelMaterialInput");
             CASE("VectorMaterialInput");
@@ -83,7 +85,7 @@ namespace upp::Objects {
 #endif
         default:
             if (ReadType != EReadType::Zero) {
-                Value.emplace<UObject>(UObject(Ar, *Tag.TagData.GetData().Struct.StructSchema, true));
+                Value.emplace<UObject>(Ar, *Tag.TagData.GetData().Struct.Schema);
             }
             else {
                 Value.emplace<std::monostate>();
