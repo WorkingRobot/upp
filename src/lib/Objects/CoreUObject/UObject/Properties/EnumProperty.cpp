@@ -1,11 +1,11 @@
 #pragma once
 
 #include "../../../../Providers/Enum.h"
-#include "../FPropertyData.h"
+#include "../UPropertyData.h"
 #include "BaseProperty.h"
 
 namespace upp::Objects {
-    EnumProperty::BaseProperty(FArchive& Ar, const FPropertyTag& Tag, EReadType ReadType)
+    EnumProperty::BaseProperty(FArchive& Ar, const UPropertyTag& Tag, EReadType ReadType)
     {
         switch (ReadType)
         {
@@ -14,21 +14,16 @@ namespace upp::Objects {
             size_t EnumIdx;
             auto& InnerType = Tag.TagData.GetData().Enum.InnerType;
             if (InnerType) {
-                FPropertyData Data(Ar, *InnerType, EReadType::Normal);
+                UPropertyData Data(Ar, *InnerType, EReadType::Normal);
 
                 std::visit([&EnumIdx](auto&& Data) {
                     using T = std::decay_t<decltype(Data)>;
-                    if constexpr (std::is_same_v<T, std::monostate>) {
-                        EnumIdx = -1;
+                    using DataT = std::decay_t<decltype(Data.Get())>;
+                    if constexpr (std::is_integral_v<DataT>) {
+                        EnumIdx = Data.Get();
                     }
                     else {
-                        using DataT = std::decay_t<decltype(Data.Get())>;
-                        if constexpr (std::is_integral_v<DataT>) {
-                            EnumIdx = Data.Get();
-                        }
-                        else {
-                            EnumIdx = -1;
-                        }
+                        EnumIdx = -1;
                     }
                 }, Data.Data);
             }

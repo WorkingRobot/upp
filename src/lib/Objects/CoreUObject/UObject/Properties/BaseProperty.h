@@ -4,7 +4,7 @@
 #include "../../../Core/UObject/FName.h"
 #include "../FFieldPath.h"
 #include "../FPackageIndex.h"
-#include "../FPropertyTag.h"
+#include "../UPropertyTag.h"
 #include "../FMulticastScriptDelegate.h"
 #include "../FScriptDelegate.h"
 #include "../FScriptInterface.h"
@@ -12,7 +12,6 @@
 #include "../FUniqueObjectGuid.h"
 
 #include <any>
-#include <deque>
 
 namespace upp::Objects {
     enum class EReadType : uint8_t
@@ -23,7 +22,7 @@ namespace upp::Objects {
         Zero
     };
 
-    struct FPropertyData;
+    struct UPropertyData;
 
     namespace Detail {
         using namespace Providers;
@@ -41,7 +40,7 @@ namespace upp::Objects {
         CASE(EPropertyType::NameProperty, FName);
         CASE(EPropertyType::DelegateProperty, FScriptDelegate);
         CASE(EPropertyType::DoubleProperty, double);
-        CASE(EPropertyType::ArrayProperty, std::vector<FPropertyData>);
+        CASE(EPropertyType::ArrayProperty, std::vector<UPropertyData>);
         CASE(EPropertyType::StructProperty, std::any);
         CASE(EPropertyType::StrProperty, std::string);
         CASE(EPropertyType::TextProperty, FText);
@@ -57,8 +56,8 @@ namespace upp::Objects {
         CASE(EPropertyType::Int64Property, int64_t);
         CASE(EPropertyType::Int16Property, int16_t);
         CASE(EPropertyType::Int8Property, int8_t);
-        CASE(EPropertyType::MapProperty, std::vector<std::pair<FPropertyData, FPropertyData>>);
-        CASE(EPropertyType::SetProperty, std::vector<FPropertyData>);
+        CASE(EPropertyType::MapProperty, std::vector<std::pair<UPropertyData, UPropertyData>>);
+        CASE(EPropertyType::SetProperty, std::vector<UPropertyData>);
         CASE(EPropertyType::EnumProperty, std::string);
         CASE(EPropertyType::FieldPathProperty, FFieldPath);
 
@@ -68,7 +67,6 @@ namespace upp::Objects {
 
     template<Providers::EPropertyType Type, class T = Detail::PropertyTraits<Type>::T>
     struct BaseProperty {
-    public:
         const T& Get() const
         {
             return Value;
@@ -84,7 +82,7 @@ namespace upp::Objects {
             return &Value;
         }
 
-        BaseProperty(FArchive& Ar, const FPropertyTag& Tag, EReadType ReadType);
+        BaseProperty(FArchive& Ar, const UPropertyTag& Tag, EReadType ReadType);
 
     protected:
         BaseProperty() = default;

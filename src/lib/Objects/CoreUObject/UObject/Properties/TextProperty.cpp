@@ -3,7 +3,7 @@
 #include "BaseProperty.h"
 
 namespace upp::Objects {
-    TextProperty::BaseProperty(FArchive& Ar, const FPropertyTag& Tag, EReadType ReadType) :
+    TextProperty::BaseProperty(FArchive& Ar, const UPropertyTag& Tag, EReadType ReadType) :
         Value{nullptr, ETextFlag::Immutable}
     {
         switch (ReadType)

@@ -7,5 +7,7 @@
 namespace upp::Objects {
     struct UPackage {
         std::vector<std::unique_ptr<UObject>> Exports;
+
+        std::vector<std::string> NameMap;
     };
 }

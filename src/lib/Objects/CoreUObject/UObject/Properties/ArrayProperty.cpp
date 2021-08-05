@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../FPropertyData.h"
+#include "../UPropertyData.h"
 #include "BaseProperty.h"
 
 namespace upp::Objects {
-    ArrayProperty::BaseProperty(FArchive& Ar, const FPropertyTag& Tag, EReadType ReadType)
+    ArrayProperty::BaseProperty(FArchive& Ar, const UPropertyTag& Tag, EReadType ReadType)
     {
         switch (ReadType)
         {

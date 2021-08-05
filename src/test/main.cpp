@@ -99,7 +99,7 @@ int main() {
         auto End = std::chrono::steady_clock::now();
         printf("%.02f ms\n", (End - Start).count() / 1000000.);
     }
-    Vfs.GetPackage("/FortniteGame/Content/Athena/Sounds/Emotes/Cryptography/Emote_Cryptography_Loop");
+    Vfs.GetPackage("/FortniteGame/Content/Athena/Prototype/Blueprints/BP_Athena_HiThere");
 
     // /Game/Athena/Items/Cosmetics/Dances/EID_Quantity_39X5D
     // /Game/Catalog/NewDisplayAssets/DAv2_EID_Quantity_39X5D

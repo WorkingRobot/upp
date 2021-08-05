@@ -1,13 +1,16 @@
 #include "UObject.h"
 
 #include "../../../Vfs/Vfs.h"
+#include "../../Engine/Engine/UBlueprintGeneratedClass.h"
 #include "../../Engine/Engine/UCurveTable.h"
 #include "../../Engine/Engine/UDataTable.h"
 #include "../../Engine/Engine/UTexture2D.h"
 #include "../../Engine/Engine/UTextureCube.h"
 #include "../../Engine/Engine/UVolumeTexture.h"
+#include "../../Engine/Engine/UWidgetBlueprintGeneratedClass.h"
 #include "../../Engine/Sound/USoundWave.h"
 #include "../Serialization/FIterator.h"
+#include "UFunction.h"
 
 #include <numeric>
 
@@ -43,12 +46,15 @@ namespace upp::Objects {
         {
 #define CASE(Name, Type) case Crc32(Name): return std::make_unique<Type>(Ar, *SchemaPtr, Ctx, IsCDO)
 
-        CASE("CurveTable", UCurveTable);
-        CASE("DataTable", UDataTable);
-        CASE("SoundWave", USoundWave);
-        CASE("Texture2D", UTexture2D);
-        CASE("TextureCube", UTextureCube);
-        CASE("VolumeTexture", UVolumeTexture);
+            CASE("BlueprintGeneratedClass", UBlueprintGeneratedClass);
+            CASE("CurveTable", UCurveTable);
+            CASE("DataTable", UDataTable);
+            CASE("Function", UFunction);
+            CASE("SoundWave", USoundWave);
+            CASE("Texture2D", UTexture2D);
+            CASE("TextureCube", UTextureCube);
+            CASE("VolumeTexture", UVolumeTexture);
+            CASE("WidgetBlueprintGeneratedClass", UWidgetBlueprintGeneratedClass);
 
 #undef CASE
         default: return std::unique_ptr<UObject>(new UObject(Ar, *SchemaPtr, IsCDO));
@@ -90,7 +96,7 @@ namespace upp::Objects {
         }
     }
 
-    const FProperty* UObject::GetProperty(uint32_t SchemaIdx) const
+    const UProperty* UObject::GetProperty(uint32_t SchemaIdx) const
     {
         auto Itr = std::find_if(Properties.begin(), Properties.end(), [SchemaIdx](const auto& Prop) {
             return Prop.first == SchemaIdx;
@@ -112,7 +118,7 @@ namespace upp::Objects {
         return -1;
     }
 
-    const FProperty* UObject::GetProperty(const std::string& Name) const
+    const UProperty* UObject::GetProperty(const std::string& Name) const
     {
         auto SchemaIdx = GetSchemaIdx(Schema, Name);
         return SchemaIdx != -1 ? GetProperty(SchemaIdx) : nullptr;

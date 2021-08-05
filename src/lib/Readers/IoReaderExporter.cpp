@@ -63,9 +63,8 @@ namespace upp::Readers {
         FPackageSummary Summary;
         AssetAr >> Summary;
         
-        std::vector<std::string> NameMap;
         AssetAr.Seek(Summary.NameMapNamesOffset, ESeekDir::Beg);
-        Vfs::GlobalData::ReadNameMap(AssetAr, Summary.NameMapHashesSize, NameMap);
+        Vfs::GlobalData::ReadNameMap(AssetAr, Summary.NameMapHashesSize, Ret->NameMap);
 
         std::vector<FPackageObjectIndex> ImportMap;
         AssetAr.Seek(Summary.ImportMapOffset, ESeekDir::Beg);
@@ -87,8 +86,8 @@ namespace upp::Readers {
         AssetAr.Seek(Summary.GraphDataOffset, ESeekDir::Beg);
         AssetAr >> GraphData;
 
-        FSerializeCtx Ctx(Vfs, NameMap.front(), ImportMap, ExportMap);
-        NameMappedArchive ExportAr(std::move(NameMap), std::move(AssetAr));
+        FSerializeCtx Ctx(Vfs, Ret->NameMap.front(), ImportMap, ExportMap);
+        NameMappedArchive ExportAr(Ret->NameMap, std::move(AssetAr));
 
         // https://github.com/EpicGames/UnrealEngine/blob/5df54b7ef1714f28fb5da319c3e83d96f0bedf08/Engine/Source/Runtime/CoreUObject/Private/Serialization/AsyncLoading2.cpp#L3508
         size_t ExportOffset = Summary.GraphDataOffset + Summary.GraphDataSize;
@@ -102,18 +101,19 @@ namespace upp::Readers {
                     std::string ClassName;
 
                     // https://github.com/FabianFG/CUE4Parse/blob/9567177dbc2a05a5bc2edbe864896117ff6fdbf6/CUE4Parse/UE4/Assets/IoPackage.cs#L252
-                    auto Type = Export.ClassIndex.GetType();
-                    if (Export.ClassIndex.IsExport()) {
+                    // https://github.com/EpicGames/UnrealEngine/blob/c3caf7b6bf12ae4c8e09b606f10a09776b4d1f38/Engine/Source/Developer/IoStoreUtilities/Private/IoStoreUtilities.cpp#L1660
+                    if (Export.ClassIndex.IsScriptImport()) {
                         ClassName = GlobalData.GetName(GlobalData.GetEntry(Export.ClassIndex).ObjectName);
                     }
-                    else if (Export.ClassIndex.IsScriptImport()) {
-                        ClassName = GlobalData.GetName(GlobalData.GetEntry(Export.ClassIndex).ObjectName);
+                    else if (Export.ClassIndex.IsExport()) {
+                        ClassName = GlobalData.GetName(ExportMap[Export.ClassIndex.GetValue()].ObjectName);
                     }
-                    else {
-                        ClassName = "None";
+                    else if (Export.ClassIndex.IsPackageImport()) {
+                        // Unsure what to do exactly...
+                        // https://github.com/EpicGames/UnrealEngine/blob/c3caf7b6bf12ae4c8e09b606f10a09776b4d1f38/Engine/Source/Developer/IoStoreUtilities/Private/IoStoreUtilities.cpp#L3027
+                        // PublicExportIndices are populated here ^ and should be used here v
                     }
 
-                    //bool Unversioned = ((uint32_t)Summary.PackageFlags & (uint32_t)EPackageFlags::PKG_UnversionedProperties) != 0;
                     ExportAr.Seek(ExportOffset, ESeekDir::Beg);
                     Ret->Exports[Bundle.LocalExportIndex] = UObject::SerializeUnversioned(ExportAr, ClassName, Ctx, (uint32_t)Export.ObjectFlags & (uint32_t)EObjectFlags::RF_ClassDefaultObject);
 #ifdef _DEBUG
@@ -121,7 +121,6 @@ namespace upp::Readers {
                         _CrtDbgBreak();
                     }
 #endif
-                    //printf("%s %s %zu %zu\n", ObjectName.c_str(), ClassName.c_str(), ExportOffset, Export.CookedSerialOffset);
                     ExportOffset += Export.CookedSerialSize;
                 }
             }

@@ -2,7 +2,7 @@
 
 #include "../../../Providers/Schema.h"
 #include "../../Core/Serialization/FArchive.h"
-#include "FProperty.h"
+#include "UProperty.h"
 #include "FSerializeCtx.h"
 
 namespace upp::Vfs {
@@ -12,15 +12,15 @@ namespace upp::Vfs {
 namespace upp::Objects {
     struct UObject {
         const Providers::Schema& Schema;
-        std::vector<std::pair<uint32_t, FProperty>> Properties;
+        std::vector<std::pair<uint32_t, UProperty>> Properties;
 
         UObject(FArchive& Ar, const Providers::Schema& Schema, bool IsCDO = true);
 
         virtual ~UObject() = default;
 
-        const FProperty* GetProperty(uint32_t SchemaIdx) const;
+        const UProperty* GetProperty(uint32_t SchemaIdx) const;
 
-        const FProperty* GetProperty(const std::string& Name) const;
+        const UProperty* GetProperty(const std::string& Name) const;
 
         template<class T>
         const T* Get(const std::string& Name) const

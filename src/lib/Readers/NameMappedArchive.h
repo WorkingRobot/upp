@@ -9,9 +9,9 @@ namespace upp::Readers {
 
     public:
         template<class... ArgsT>
-        NameMappedArchive(std::vector<std::string>&& NameMap, ArgsT&&... Args) :
+        NameMappedArchive(const std::vector<std::string>& NameMap, ArgsT&&... Args) :
             T(std::forward<ArgsT>(Args)...),
-            NameMap(std::move(NameMap))
+            NameMap(NameMap)
         {
 
         }
@@ -30,9 +30,9 @@ namespace upp::Readers {
         }
 
     private:
-        const std::vector<std::string> NameMap;
+        const std::vector<std::string>& NameMap;
     };
 
     template<class T>
-    NameMappedArchive(std::vector<std::string>&&, T&&) -> NameMappedArchive<T>;
+    NameMappedArchive(const std::vector<std::string>&, T&&) -> NameMappedArchive<T>;
 }

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../FPropertyData.h"
+#include "../UPropertyData.h"
 #include "BaseProperty.h"
 
 namespace upp::Objects {
-    MapProperty::BaseProperty(FArchive& Ar, const FPropertyTag& Tag, EReadType ReadType)
+    MapProperty::BaseProperty(FArchive& Ar, const UPropertyTag& Tag, EReadType ReadType)
     {
         switch (ReadType)
         {
@@ -14,7 +14,7 @@ namespace upp::Objects {
             int NumKeysToRemove;
             Ar >> NumKeysToRemove;
             for (int i = 0; i < NumKeysToRemove; ++i) {
-                FPropertyData(Ar, *Tag.TagData.GetData().Map.InnerType, EReadType::Map);
+                UPropertyData(Ar, *Tag.TagData.GetData().Map.InnerType, EReadType::Map);
             }
 
             int NumEntries;

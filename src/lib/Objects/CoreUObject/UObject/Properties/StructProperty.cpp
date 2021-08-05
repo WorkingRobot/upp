@@ -12,7 +12,7 @@
 #include "BaseProperty.h"
 
 namespace upp::Objects {
-    StructProperty::BaseProperty(FArchive& Ar, const FPropertyTag& Tag, EReadType ReadType)
+    StructProperty::BaseProperty(FArchive& Ar, const UPropertyTag& Tag, EReadType ReadType)
     {
         auto& StructType = Tag.TagData.GetData().Struct.Schema->Name;
         switch (Crc32(StructType.GetString(), StructType.GetSize()))
