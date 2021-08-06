@@ -5,6 +5,7 @@
 #include "../../Engine/Engine/UCurveTable.h"
 #include "../../Engine/Engine/UDataTable.h"
 #include "../../Engine/Engine/ULevel.h"
+#include "../../Engine/Engine/UModel.h"
 #include "../../Engine/Engine/UTexture2D.h"
 #include "../../Engine/Engine/UTextureCube.h"
 #include "../../Engine/Engine/UVolumeTexture.h"
@@ -53,6 +54,7 @@ namespace upp::Objects {
             CASE("DataTable", UDataTable);
             CASE("Function", UFunction);
             CASE("Level", ULevel);
+            CASE("Model", UModel);
             CASE("SoundWave", USoundWave);
             CASE("Texture2D", UTexture2D);
             CASE("TextureCube", UTextureCube);

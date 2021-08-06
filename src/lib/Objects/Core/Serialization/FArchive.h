@@ -163,17 +163,32 @@ namespace upp::Objects {
         // Micro optimization to simply copy into the vector buffer
         // This is not a specialization of >> std::vector<T> because
         // it's impossible to know if >> does the same thing as a memcpy
-        template<class T, std::enable_if_t<std::has_unique_object_representations_v<T>, bool> = true>
+        // This does not use std::has_unique_object_representations_v<T>
+        // because it doesn't work on floats, so it's up to you to use this
+        template<class T>
         void ReadBuffer(std::vector<T>& Val, size_t ReadCount) {
             Val.resize(ReadCount);
             Read((char*)Val.data(), ReadCount * sizeof(T));
         }
 
-        template<class T, std::enable_if_t<std::has_unique_object_representations_v<T>, bool> = true>
+        template<class T>
         void ReadBuffer(std::vector<T>& Val) {
             int ReadCount;
             *this >> ReadCount;
             ReadBuffer(Val, ReadCount);
+        }
+
+        // https://github.com/EpicGames/UnrealEngine/blob/93ac332d31ed59b186e1b29ad58e9cc395af12b2/Engine/Source/Runtime/Core/Public/Containers/Array.h#L1251
+        template<class T>
+        void BulkSerialize(std::vector<T>& Val) {
+            int SerializedElementSize;
+            *this >> SerializedElementSize;
+#ifdef _DEBUG
+            if (SerializedElementSize != sizeof(T)) {
+                _CrtDbgBreak();
+            }
+#endif
+            ReadBuffer(Val);
         }
 
         template<class T>
