@@ -40,8 +40,7 @@ namespace upp::Readers {
 
     std::unique_ptr<UPackage> IoReader::ExportPackage(uint32_t AssetIdx, Vfs::Vfs& Vfs)
     {
-        FContainerHeader Header;
-        GetHeader(Header);
+        auto& Header = *GetHeader();
         auto& GlobalData = Vfs.GetGlobalData();
         auto Ret = std::make_unique<UPackage>();
 
@@ -66,13 +65,11 @@ namespace upp::Readers {
         AssetAr.Seek(Summary.NameMapNamesOffset, ESeekDir::Beg);
         Vfs::GlobalData::ReadNameMap(AssetAr, Summary.NameMapHashesSize, Ret->NameMap);
 
-        std::vector<FPackageObjectIndex> ImportMap;
         AssetAr.Seek(Summary.ImportMapOffset, ESeekDir::Beg);
-        AssetAr.ReadBuffer(ImportMap, (Summary.ExportMapOffset - Summary.ImportMapOffset) / sizeof(FPackageObjectIndex));
+        AssetAr.ReadBuffer(Ret->ImportMap, (Summary.ExportMapOffset - Summary.ImportMapOffset) / sizeof(FPackageObjectIndex));
 
-        std::vector<FExportMapEntry> ExportMap;
         AssetAr.Seek(Summary.ExportMapOffset, ESeekDir::Beg);
-        AssetAr.ReadBuffer(ExportMap, Entry.ExportCount);
+        AssetAr.ReadBuffer(Ret->ExportMap, Entry.ExportCount);
         Ret->Exports.resize(Entry.ExportCount);
 
         std::vector<FExportBundleHeader> BundleHeaders;
@@ -86,7 +83,7 @@ namespace upp::Readers {
         AssetAr.Seek(Summary.GraphDataOffset, ESeekDir::Beg);
         AssetAr >> GraphData;
 
-        FSerializeCtx Ctx(Vfs, Ret->NameMap.front(), ImportMap, ExportMap);
+        FSerializeCtx Ctx(Vfs, Ret->NameMap.front(), Ret->ImportMap, Ret->ExportMap);
         NameMappedArchive ExportAr(Ret->NameMap, std::move(AssetAr));
 
         // https://github.com/EpicGames/UnrealEngine/blob/5df54b7ef1714f28fb5da319c3e83d96f0bedf08/Engine/Source/Runtime/CoreUObject/Private/Serialization/AsyncLoading2.cpp#L3508
@@ -94,7 +91,7 @@ namespace upp::Readers {
         for (auto& BundleHeader : BundleHeaders) {
             for (int Idx = 0; Idx < BundleHeader.EntryCount; ++Idx) {
                 auto& Bundle = BundleEntries[BundleHeader.FirstEntryIndex + Idx];
-                auto& Export = ExportMap[Bundle.LocalExportIndex];
+                auto& Export = Ret->ExportMap[Bundle.LocalExportIndex];
                 if (Bundle.CommandType == EExportCommandType::Serialize) {
                     auto& ObjectName = ExportAr.GetName(Export.ObjectName.Index);
 
@@ -106,19 +103,38 @@ namespace upp::Readers {
                         ClassName = GlobalData.GetName(GlobalData.GetEntry(Export.ClassIndex).ObjectName);
                     }
                     else if (Export.ClassIndex.IsExport()) {
-                        ClassName = GlobalData.GetName(ExportMap[Export.ClassIndex.GetValue()].ObjectName);
+                        ClassName = GlobalData.GetName(Ret->ExportMap[Export.ClassIndex.GetValue()].ObjectName);
                     }
                     else if (Export.ClassIndex.IsPackageImport()) {
-                        // Unsure what to do exactly...
-                        // https://github.com/EpicGames/UnrealEngine/blob/c3caf7b6bf12ae4c8e09b606f10a09776b4d1f38/Engine/Source/Developer/IoStoreUtilities/Private/IoStoreUtilities.cpp#L3027
-                        // PublicExportIndices are populated here ^ and should be used here v
+                        for (int Idx = 0; Idx < Entry.ImportedPackagesCount; ++Idx) {
+                            Vfs::File File;
+                            if (Vfs.FindChunk(FIoChunkId(Header.ImportedPackages[Entry.ImportedPackagesIdx + Idx].Id, 0, EIoChunkType::ExportBundleData), File)) {
+                                // TODO: Possibly slim this down to allow "minimal" reads to not parse the package data (and only get the maps)
+                                auto Pkg = Vfs.GetPackage(File);
+                                for (auto& PkgExport : Pkg->ExportMap) {
+                                    if (PkgExport.GlobalImportIndex == Export.ClassIndex) {
+                                        ClassName = GlobalData.GetName(PkgExport.ObjectName);
+                                        break;
+                                    }
+                                }
+                                if (!ClassName.empty()) {
+                                    break;
+                                }
+                            }
+                        }
                     }
+#ifdef _DEBUG
+                    if (ClassName.empty()) {
+                        _CrtDbgBreak();
+                    }
+#endif
 
                     ExportAr.Seek(ExportOffset, ESeekDir::Beg);
                     Ret->Exports[Bundle.LocalExportIndex] = UObject::SerializeUnversioned(ExportAr, ClassName, Ctx, (uint32_t)Export.ObjectFlags & (uint32_t)EObjectFlags::RF_ClassDefaultObject);
 #ifdef _DEBUG
                     if (ExportAr.Tell() != ExportOffset + Export.CookedSerialSize) {
-                        _CrtDbgBreak();
+                        printf("%s\n", ClassName.c_str());
+                        // _CrtDbgBreak();
                     }
 #endif
                     ExportOffset += Export.CookedSerialSize;

@@ -4,10 +4,13 @@
 #include "../../../../Providers/Schema.h"
 #include "../../../Core/Math/FIntPoint.h"
 #include "../../../Core/Math/FLinearColor.h"
+#include "../../../Core/Math/FRotator.h"
+#include "../../../Core/Math/FVector.h"
 #include "../../../Core/Misc/FGuid.h"
 #include "../../../Engine/Curves/FRichCurveKey.h"
 #include "../../../Engine/Curves/FSimpleCurveKey.h"
 #include "../../../GameplayTags/FGameplayTagContainer.h"
+#include "../FSoftClassPath.h"
 #include "../UObject.h"
 #include "BaseProperty.h"
 
@@ -24,7 +27,11 @@ namespace upp::Objects {
             CASE("IntPoint", FIntPoint);
             CASE("LinearColor", FLinearColor);
             CASE("RichCurveKey", FRichCurveKey);
+            CASE("Rotator", FRotator);
             CASE("SimpleCurveKey", FSimpleCurveKey);
+            CASE("SoftClassPath", FSoftClassPath);
+            CASE("SoftObjectPath", FSoftObjectPath);
+            CASE("Vector", FVector);
 
 #undef CASE
 #ifdef _DEBUG
@@ -67,12 +74,8 @@ namespace upp::Objects {
             CASE("MovieSceneTrackImplementationPtr");
             CASE("Plane");
             CASE("Quat");
-            CASE("Rotator");
             CASE("SectionEvaluationDataTree");
-            CASE("SoftClassPath");
-            CASE("SoftObjectPath");
             CASE("Timespan");
-            CASE("Vector");
             CASE("Vector2D");
             CASE("Vector4");
             CASE("Vector_NetQuantize");

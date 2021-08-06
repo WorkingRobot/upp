@@ -4,10 +4,12 @@
 #include "../../Engine/Engine/UBlueprintGeneratedClass.h"
 #include "../../Engine/Engine/UCurveTable.h"
 #include "../../Engine/Engine/UDataTable.h"
+#include "../../Engine/Engine/ULevel.h"
 #include "../../Engine/Engine/UTexture2D.h"
 #include "../../Engine/Engine/UTextureCube.h"
 #include "../../Engine/Engine/UVolumeTexture.h"
 #include "../../Engine/Engine/UWidgetBlueprintGeneratedClass.h"
+#include "../../Engine/Engine/UWorld.h"
 #include "../../Engine/Sound/USoundWave.h"
 #include "../Serialization/FIterator.h"
 #include "UFunction.h"
@@ -50,11 +52,13 @@ namespace upp::Objects {
             CASE("CurveTable", UCurveTable);
             CASE("DataTable", UDataTable);
             CASE("Function", UFunction);
+            CASE("Level", ULevel);
             CASE("SoundWave", USoundWave);
             CASE("Texture2D", UTexture2D);
             CASE("TextureCube", UTextureCube);
             CASE("VolumeTexture", UVolumeTexture);
             CASE("WidgetBlueprintGeneratedClass", UWidgetBlueprintGeneratedClass);
+            CASE("World", UWorld);
 
 #undef CASE
         default: return std::unique_ptr<UObject>(new UObject(Ar, *SchemaPtr, IsCDO));

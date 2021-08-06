@@ -33,6 +33,11 @@ namespace upp::Readers {
         return Ar;
     }
 
+    uint32_t BaseReader::FindChunk(const Objects::FIoChunkId& Id) const
+    {
+        return -1;
+    }
+
     void BaseReader::SetError(Error NewError)
     {
         StoredError = NewError;

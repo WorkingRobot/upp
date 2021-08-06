@@ -35,17 +35,30 @@ namespace upp::Readers {
         return CompressionMethods[CompressionMethodIdx];
     }
 
-    bool IoReader::GetHeader(FContainerHeader& OutHeader)
+    FContainerHeader* IoReader::GetHeader()
     {
-        auto HeaderIdx = GetChunkIdx(FIoChunkId(ContainerId.Id, 0, EIoChunkType::ContainerHeader));
+        if (Header.has_value()) {
+            return &Header.value();
+        }
+
+        auto HeaderIdx = FindChunk(FIoChunkId(ContainerId.Id, 0, EIoChunkType::ContainerHeader));
         if (HeaderIdx == -1) {
-            return false;
+            return nullptr;
         }
 
         FIoArchive HeaderAr(HeaderIdx, *this);
-        HeaderAr >> OutHeader;
+        HeaderAr >> Header.emplace();
 
-        return true;
+        return &Header.value();
+    }
+
+    uint32_t IoReader::FindChunk(const Objects::FIoChunkId& Id) const
+    {
+        auto Itr = std::find(ChunkIds.begin(), ChunkIds.end(), Id);
+        if (Itr != ChunkIds.end()) {
+            return std::distance(ChunkIds.begin(), Itr);
+        }
+        return -1;
     }
 
     std::unique_ptr<FArchive> IoReader::OpenFile(uint32_t FileIdx)
@@ -68,9 +81,9 @@ namespace upp::Readers {
             MergeDirectory(Vfs, TranslatePaths, std::move(Index));
         }
         else {
-            auto NamesIdx = GetChunkIdx(FIoChunkId(0, 0, EIoChunkType::LoaderGlobalNames));
-            auto HashesIdx = GetChunkIdx(FIoChunkId(0, 0, EIoChunkType::LoaderGlobalNameHashes));
-            auto MetaIdx = GetChunkIdx(FIoChunkId(0, 0, EIoChunkType::LoaderInitialLoadMeta));
+            auto NamesIdx = FindChunk(FIoChunkId(0, 0, EIoChunkType::LoaderGlobalNames));
+            auto HashesIdx = FindChunk(FIoChunkId(0, 0, EIoChunkType::LoaderGlobalNameHashes));
+            auto MetaIdx = FindChunk(FIoChunkId(0, 0, EIoChunkType::LoaderInitialLoadMeta));
             if (NamesIdx != -1 && HashesIdx != -1 && MetaIdx != -1) {
                 FIoArchive NamesAr(NamesIdx, *this);
                 FIoArchive HashesAr(HashesIdx, *this);
@@ -128,15 +141,6 @@ namespace upp::Readers {
     const Objects::FAESSchedule& IoReader::GetSchedule() const
     {
         return KeyChain.GetKey(EncryptionKeyGuid);
-    }
-
-    uint32_t IoReader::GetChunkIdx(const Objects::FIoChunkId& Id) const
-    {
-        auto Itr = std::find(ChunkIds.begin(), ChunkIds.end(), Id);
-        if (Itr != ChunkIds.end()) {
-            return std::distance(ChunkIds.begin(), Itr);
-        }
-        return -1;
     }
 
     void IoReader::Append(const FIoDirectoryIndexResource& Index, Vfs::Directory<>& Tree, uint32_t DirIdx)

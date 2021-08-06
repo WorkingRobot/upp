@@ -48,6 +48,18 @@ namespace upp::Vfs {
         return true;
     }
 
+    bool Vfs::FindChunk(const Objects::FIoChunkId& Id, File& File)
+    {
+        for (auto& Reader : Readers) {
+            auto Idx = Reader->FindChunk(Id);
+            if (Idx != -1) {
+                File = upp::Vfs::File(Reader->GetReaderIdx(), Idx);
+                return true;
+            }
+        }
+        return false;
+    }
+
     std::unique_ptr<Objects::FArchive> Vfs::GetFile(const char* Path)
     {
         if (*Path == '/') {
@@ -84,18 +96,26 @@ namespace upp::Vfs {
 
         auto AssetFile = Root.TryGetFile((std::string(Path) + ".uasset").c_str());
         if (!AssetFile) {
-            return nullptr;
+            AssetFile = Root.TryGetFile((std::string(Path) + ".umap").c_str());
+            if (!AssetFile) {
+                return nullptr;
+            }
         }
 
+        return GetPackage(*AssetFile);
+    }
+
+    std::unique_ptr<Objects::UPackage> Vfs::GetPackage(const File& File)
+    {
         auto ReaderItr = std::find_if(Readers.begin(), Readers.end(),
-            [ReaderIdx = AssetFile->GetReaderIdx()](const std::unique_ptr<Readers::BaseReader>& Ptr) {
-            return Ptr->GetReaderIdx() == ReaderIdx;
-        }
+            [ReaderIdx = File.GetReaderIdx()](const std::unique_ptr<Readers::BaseReader>& Ptr) {
+                return Ptr->GetReaderIdx() == ReaderIdx;
+            }
         );
         if (ReaderItr == Readers.end()) {
             return nullptr;
         }
 
-        return ReaderItr->get()->ExportPackage(AssetFile->GetFileIdx(), *this);
+        return (*ReaderItr)->ExportPackage(File.GetFileIdx(), *this);
     }
 }

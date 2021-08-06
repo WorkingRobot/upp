@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../Objects/Core/IO/FIoChunkId.h"
 #include "../Objects/CoreUObject/UObject/UPackage.h"
 #include "../Providers/BaseProvider.h"
 #include "../Readers/BaseReader.h"
@@ -57,11 +58,15 @@ namespace upp::Vfs {
 
         bool RemoveReader(uint32_t ReaderIdx);
 
+        bool FindChunk(const Objects::FIoChunkId& Id, File& File);
+
         std::unique_ptr<Objects::FArchive> GetFile(const char* Path);
 
         std::unique_ptr<Objects::FArchive> GetFile(const File& File);
 
         std::unique_ptr<Objects::UPackage> GetPackage(const char* Path);
+
+        std::unique_ptr<Objects::UPackage> GetPackage(const File& File);
 
     private:
         Directory<> Root;

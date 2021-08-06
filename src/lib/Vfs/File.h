@@ -5,6 +5,8 @@
 namespace upp::Vfs {
     class File {
     public:
+        File() = default;
+
         File(uint32_t ReaderIdx, uint32_t FileIdx) :
             ReaderIdx(ReaderIdx),
             FileIdx(FileIdx)
@@ -12,11 +14,11 @@ namespace upp::Vfs {
 
         }
 
-        uint32_t GetReaderIdx() const {
+        uint32_t GetReaderIdx() const noexcept {
             return ReaderIdx;
         }
 
-        uint32_t GetFileIdx() const {
+        uint32_t GetFileIdx() const noexcept {
             return FileIdx;
         }
 

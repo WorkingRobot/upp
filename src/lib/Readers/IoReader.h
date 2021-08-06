@@ -21,7 +21,9 @@ namespace upp::Readers {
 
         CompressionMethod GetCompressionMethod(uint32_t CompressionMethodIdx) const;
 
-        bool GetHeader(Objects::FContainerHeader& OutHeader);
+        Objects::FContainerHeader* GetHeader();
+
+        uint32_t FindChunk(const Objects::FIoChunkId& Id) const override;
 
         std::unique_ptr<Objects::FArchive> OpenFile(uint32_t FileIdx) override;
 
@@ -36,8 +38,6 @@ namespace upp::Readers {
 
         const Objects::FAESSchedule& GetSchedule() const;
 
-        uint32_t GetChunkIdx(const Objects::FIoChunkId& Id) const;
-
         void Append(const Objects::FIoDirectoryIndexResource& Index, Vfs::Directory<>& Tree, uint32_t DirIdx);
 
         Vfs::Directory<> Index;
@@ -51,5 +51,6 @@ namespace upp::Readers {
         std::vector<Objects::FIoOffsetAndLength> ChunkOffsetLengths;
         std::vector<Objects::FIoChunkId> ChunkIds;
         std::vector<Objects::FIoStoreTocCompressedBlockEntry> CompressionBlocks;
+        std::optional<Objects::FContainerHeader> Header;
     };
 }

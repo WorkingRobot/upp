@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../IKeyChain.h"
+#include "../Objects/Core/IO/FIoChunkId.h"
 #include "../Objects/Core/Serialization/FArchive.h"
 #include "../Objects/CoreUObject/UObject/UPackage.h"
 #include "../Vfs/Directory.h"
@@ -24,6 +25,8 @@ namespace upp::Readers {
         uint32_t GetReaderIdx() const;
 
         const Objects::FArchive& GetArchive() const;
+
+        virtual uint32_t FindChunk(const Objects::FIoChunkId& Id) const;
 
         virtual std::unique_ptr<Objects::FArchive> OpenFile(uint32_t FileIdx) = 0;
 
