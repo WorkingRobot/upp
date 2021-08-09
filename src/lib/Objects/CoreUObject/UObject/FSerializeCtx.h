@@ -1,6 +1,8 @@
 #pragma once
 
+#include "../../Core/IO/EIoChunkType.h"
 #include "../../Core/Serialization/FArchive.h"
+#include "../../CoreUObject/UObject/FPackageId.h"
 #include "../Serialization/FExportMapEntry.h"
 
 namespace upp::Vfs {
@@ -10,11 +12,11 @@ namespace upp::Vfs {
 namespace upp::Objects {
     struct FSerializeCtx {
     public:
-        FSerializeCtx(Vfs::Vfs& Vfs, const std::string& PackageName, const std::vector<FPackageObjectIndex>& ImportMap, const std::vector<FExportMapEntry>& ExportMap);
+        FSerializeCtx(Vfs::Vfs& Vfs, const FPackageId& PackageId, const std::vector<FPackageObjectIndex>& ImportMap, const std::vector<FExportMapEntry>& ExportMap);
 
         Vfs::Vfs& GetVfs();
 
-        std::unique_ptr<FArchive> GetSiblingArchive(const char* Extension);
+        std::unique_ptr<FArchive> GetSiblingArchive(EIoChunkType Type);
 
         const FPackageObjectIndex& GetImport(uint32_t Idx) const;
 
@@ -24,7 +26,7 @@ namespace upp::Objects {
 
     private:
         Vfs::Vfs& Vfs;
-        const std::string PackageName;
+        const FPackageId PackageId;
         const std::vector<FPackageObjectIndex>& ImportMap;
         const std::vector<FExportMapEntry>& ExportMap;
     };

@@ -83,7 +83,7 @@ namespace upp::Readers {
         AssetAr.Seek(Summary.GraphDataOffset, ESeekDir::Beg);
         AssetAr >> GraphData;
 
-        FSerializeCtx Ctx(Vfs, Ret->NameMap.front(), Ret->ImportMap, Ret->ExportMap);
+        FSerializeCtx Ctx(Vfs, Id, Ret->ImportMap, Ret->ExportMap);
         NameMappedArchive ExportAr(Ret->NameMap, std::move(AssetAr));
 
         // https://github.com/EpicGames/UnrealEngine/blob/5df54b7ef1714f28fb5da319c3e83d96f0bedf08/Engine/Source/Runtime/CoreUObject/Private/Serialization/AsyncLoading2.cpp#L3508
@@ -133,8 +133,7 @@ namespace upp::Readers {
                     Ret->Exports[Bundle.LocalExportIndex] = UObject::SerializeUnversioned(ExportAr, ClassName, Ctx, (uint32_t)Export.ObjectFlags & (uint32_t)EObjectFlags::RF_ClassDefaultObject);
 #ifdef _DEBUG
                     if (ExportAr.Tell() != ExportOffset + Export.CookedSerialSize) {
-                        printf("%s\n", ClassName.c_str());
-                        // _CrtDbgBreak();
+                        printf("%s - %lld bytes left\n", ClassName.c_str(), (ExportOffset + Export.CookedSerialSize) - ExportAr.Tell());
                     }
 #endif
                     ExportOffset += Export.CookedSerialSize;

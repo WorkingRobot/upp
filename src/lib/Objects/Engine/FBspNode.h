@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../Core/Math/FPlane.h"
-#include "../../Core/Serialization/FArchive.h"
+#include "../Core/Math/FPlane.h"
+#include "../Core/Serialization/FArchive.h"
 #include "EBspNodeFlags.h"
 
 namespace upp::Objects {

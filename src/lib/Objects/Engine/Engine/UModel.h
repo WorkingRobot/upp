@@ -2,11 +2,11 @@
 
 #include "../../Core/Math/FBoxSphereBounds.h"
 #include "../../CoreUObject/UObject/UObject.h"
-#include "FBspNode.h"
-#include "FBspSurf.h"
+#include "../FBspNode.h"
+#include "../FBspSurf.h"
+#include "../FModelVertexBuffer.h"
 #include "FVert.h"
 #include "FLightmassPrimitiveSettings.h"
-#include "FModelVertexBuffer.h"
 
 namespace upp::Objects {
     // https://github.com/EpicGames/UnrealEngine/blob/bccdec1d349b12e817b8d565884044ce6365a619/Engine/Source/Runtime/Engine/Public/Model.h#L388

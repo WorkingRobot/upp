@@ -44,14 +44,14 @@ namespace upp::Objects {
             Ar.Read(Data.get(), BulkDataSize);
         }
         else if ((uint32_t)BulkDataFlags & (uint32_t)EBulkDataFlags::BULKDATA_OptionalPayload) {
-            auto DataArPtr = Ctx.GetSiblingArchive("uptnl");
+            auto DataArPtr = Ctx.GetSiblingArchive(EIoChunkType::OptionalBulkData);
             if (DataArPtr) {
                 Data = std::make_unique<char[]>(BulkDataSize);
                 DataArPtr->PRead(Data.get(), BulkDataSize, BulkDataOffset);
             }
         }
         else if ((uint32_t)BulkDataFlags & (uint32_t)EBulkDataFlags::BULKDATA_PayloadInSeperateFile) {
-            auto DataArPtr = Ctx.GetSiblingArchive("ubulk");
+            auto DataArPtr = Ctx.GetSiblingArchive(EIoChunkType::BulkData);
             if (DataArPtr) {
                 Data = std::make_unique<char[]>(BulkDataSize);
                 DataArPtr->PRead(Data.get(), BulkDataSize, BulkDataOffset);
@@ -62,5 +62,10 @@ namespace upp::Objects {
             Data = std::make_unique<char[]>(BulkDataSize);
             Ar.PRead(Data.get(), BulkDataSize, BulkDataOffset);
         }
+    }
+
+    FBufferArchive FByteBulkData::GetArchive() const
+    {
+        return FBufferArchive(Data.get(), BulkDataSize, "Bulk Data");
     }
 }

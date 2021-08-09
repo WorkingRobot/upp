@@ -6,12 +6,14 @@
 #include "../../Engine/Engine/UDataTable.h"
 #include "../../Engine/Engine/ULevel.h"
 #include "../../Engine/Engine/UModel.h"
+#include "../../Engine/Engine/UStaticMesh.h"
 #include "../../Engine/Engine/UTexture2D.h"
 #include "../../Engine/Engine/UTextureCube.h"
 #include "../../Engine/Engine/UVolumeTexture.h"
-#include "../../Engine/Engine/UWidgetBlueprintGeneratedClass.h"
 #include "../../Engine/Engine/UWorld.h"
+#include "../../Engine/PhysicsEngine/UBodySetup.h"
 #include "../../Engine/Sound/USoundWave.h"
+#include "../../UMG/Blueprint/UWidgetBlueprintGeneratedClass.h"
 #include "../Serialization/FIterator.h"
 #include "UFunction.h"
 
@@ -50,12 +52,14 @@ namespace upp::Objects {
 #define CASE(Name, Type) case Crc32(Name): return std::make_unique<Type>(Ar, *SchemaPtr, Ctx, IsCDO)
 
             CASE("BlueprintGeneratedClass", UBlueprintGeneratedClass);
+            CASE("BodySetup", UBodySetup);
             CASE("CurveTable", UCurveTable);
             CASE("DataTable", UDataTable);
             CASE("Function", UFunction);
             CASE("Level", ULevel);
             CASE("Model", UModel);
             CASE("SoundWave", USoundWave);
+            CASE("StaticMesh", UStaticMesh);
             CASE("Texture2D", UTexture2D);
             CASE("TextureCube", UTextureCube);
             CASE("VolumeTexture", UVolumeTexture);
@@ -84,6 +88,9 @@ namespace upp::Objects {
                 }
                 // Could not get property info
                 else {
+#ifdef _DEBUG
+                    _CrtDbgBreak();
+#endif
                     if (Itr.IsNonZero()) {
                         return;
                     }

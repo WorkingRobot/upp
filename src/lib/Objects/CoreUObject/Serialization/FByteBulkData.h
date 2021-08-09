@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../Core/Serialization/FArchive.h"
+#include "../../Core/Serialization/FBufferArchive.h"
 #include "../../CoreUObject/UObject/FSerializeCtx.h"
 #include "EBulkDataFlags.h"
 
@@ -12,5 +13,7 @@ namespace upp::Objects {
         std::unique_ptr<char[]> Data;
 
         void Serialize(FArchive& Ar, FSerializeCtx& Ctx);
+
+        FBufferArchive GetArchive() const;
     };
 }

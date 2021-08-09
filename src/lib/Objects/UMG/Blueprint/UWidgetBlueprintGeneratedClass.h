@@ -1,6 +1,6 @@
 #pragma once
 
-#include "UBlueprintGeneratedClass.h"
+#include "../../Engine/Engine/UBlueprintGeneratedClass.h"
 
 namespace upp::Objects {
     struct UWidgetBlueprintGeneratedClass : public UBlueprintGeneratedClass {

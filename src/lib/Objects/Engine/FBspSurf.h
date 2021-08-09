@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../Core/Math/FPlane.h"
-#include "../../Core/Serialization/FArchive.h"
-#include "../../CoreUObject/UObject/FPackageIndex.h"
+#include "../Core/Math/FPlane.h"
+#include "../Core/Serialization/FArchive.h"
+#include "../CoreUObject/UObject/FPackageIndex.h"
 #include "EPolyFlags.h"
 
 namespace upp::Objects {

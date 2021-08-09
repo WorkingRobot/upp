@@ -3,9 +3,9 @@
 #include "../../../Vfs/Vfs.h"
 
 namespace upp::Objects {
-    FSerializeCtx::FSerializeCtx(Vfs::Vfs& Vfs, const std::string& PackageName, const std::vector<FPackageObjectIndex>& ImportMap, const std::vector<FExportMapEntry>& ExportMap) :
+    FSerializeCtx::FSerializeCtx(Vfs::Vfs& Vfs, const FPackageId& PackageId, const std::vector<FPackageObjectIndex>& ImportMap, const std::vector<FExportMapEntry>& ExportMap) :
         Vfs(Vfs),
-        PackageName(PackageName),
+        PackageId(PackageId),
         ImportMap(ImportMap),
         ExportMap(ExportMap)
     {
@@ -17,9 +17,13 @@ namespace upp::Objects {
         return Vfs;
     }
 
-    std::unique_ptr<FArchive> FSerializeCtx::GetSiblingArchive(const char* Extension)
+    std::unique_ptr<FArchive> FSerializeCtx::GetSiblingArchive(EIoChunkType Type)
     {
-        return Vfs.GetFile((PackageName + "." + Extension).c_str());
+        Vfs::File File;
+        if (Vfs.FindChunk(FIoChunkId(PackageId.Id, 0, Type), File)) {
+            return Vfs.GetFile(File);
+        }
+        return nullptr;
     }
 
     const FPackageObjectIndex& FSerializeCtx::GetImport(uint32_t Idx) const

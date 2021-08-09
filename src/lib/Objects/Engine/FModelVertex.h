@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../../Core/Math/FVector.h"
-#include "../../Core/Math/FVector2D.h"
-#include "../../Core/Math/FVector4.h"
-#include "../../Core/Serialization/FArchive.h"
+#include "../Core/Math/FVector.h"
+#include "../Core/Math/FVector2D.h"
+#include "../Core/Math/FVector4.h"
+#include "../Core/Serialization/FArchive.h"
 
 namespace upp::Objects {
     struct FModelVertex {

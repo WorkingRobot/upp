@@ -131,7 +131,7 @@ namespace upp::Providers {
                 Ar >> SerializablePropCount;
 
                 std::vector<Property> Props;
-                Props.reserve(SerializablePropCount);
+                Props.reserve(PropCount);
                 for (uint16_t Idx = 0; Idx < SerializablePropCount; ++Idx) {
                     uint16_t SchemaIdx;
                     uint8_t ArraySize;
@@ -139,8 +139,12 @@ namespace upp::Providers {
                     Ar >> SchemaIdx;
                     Ar >> ArraySize;
                     Ar >> NameIdx;
+
                     auto& Prop = Props.emplace_back(Names[NameIdx], SchemaIdx, ArraySize);
                     SerializePropData(Ar, Prop.Data, LUT);
+                    for (int Idx = 1; Idx < ArraySize; ++Idx) {
+                        ++Props.emplace_back(Props.back()).SchemaIdx;
+                    }
                 }
 
                 auto& Schema = Schemas.emplace_back<false>(Names[SchemaNameIdx], Providers::Schema(Names[SchemaNameIdx], LUT.Schemas.Get(SchemaSuperNameIdx), PropCount, std::move(Props)));

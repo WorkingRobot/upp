@@ -99,7 +99,12 @@ int main() {
         auto End = std::chrono::steady_clock::now();
         printf("%.02f ms\n", (End - Start).count() / 1000000.);
     }
-    Vfs.GetPackage("/FortniteGame/Content/Athena/Playlists/Mash/Athena_Mash_POIs");
+    {
+        auto Start = std::chrono::steady_clock::now();
+        auto Pkg = Vfs.GetPackage("/FortniteGame/Content/Athena/Playlists/Score/Coins/Meshes/SM_Coin");
+        auto End = std::chrono::steady_clock::now();
+        printf("%.02f ms\n", (End - Start).count() / 1000000.);
+    }
 
     // /Game/Athena/Items/Cosmetics/Dances/EID_Quantity_39X5D
     // /Game/Catalog/NewDisplayAssets/DAv2_EID_Quantity_39X5D

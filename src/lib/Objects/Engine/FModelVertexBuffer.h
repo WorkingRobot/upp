@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Core/Serialization/FArchive.h"
+#include "../Core/Serialization/FArchive.h"
 #include "FModelVertex.h"
 
 namespace upp::Objects {

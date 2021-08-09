@@ -9,6 +9,7 @@
 #include "../../../Core/Misc/FGuid.h"
 #include "../../../Engine/Curves/FRichCurveKey.h"
 #include "../../../Engine/Curves/FSimpleCurveKey.h"
+#include "../../../Engine/TPerPlatformProperty.h"
 #include "../../../GameplayTags/FGameplayTagContainer.h"
 #include "../FSoftClassPath.h"
 #include "../UObject.h"
@@ -26,6 +27,9 @@ namespace upp::Objects {
             CASE("Guid", FGuid);
             CASE("IntPoint", FIntPoint);
             CASE("LinearColor", FLinearColor);
+            CASE("PerPlatformBool", FPerPlatformBool);
+            CASE("PerPlatformFloat", FPerPlatformFloat);
+            CASE("PerPlatformInt", FPerPlatformInt);
             CASE("RichCurveKey", FRichCurveKey);
             CASE("Rotator", FRotator);
             CASE("SimpleCurveKey", FSimpleCurveKey);
@@ -52,9 +56,6 @@ namespace upp::Objects {
             CASE("Vector2MaterialInput");
             CASE("MaterialAttributesInput");
             CASE("SkeletalMeshSamplingLODBuiltData");
-            CASE("PerPlatformBool");
-            CASE("PerPlatformFloat");
-            CASE("PerPlatformInt");
             CASE("PerQualityLevelInt");
             CASE("IntVector");
             CASE("LevelSequenceObjectReferenceMap");
