@@ -2,6 +2,7 @@
 
 #include "../../../Vfs/Vfs.h"
 #include "../../Engine/Animation/USkeleton.h"
+#include "../../Engine/Animation/UAnimBlueprintGeneratedClass.h"
 #include "../../Engine/Engine/UBlueprintGeneratedClass.h"
 #include "../../Engine/Engine/UCurveTable.h"
 #include "../../Engine/Engine/UDataTable.h"
@@ -52,6 +53,7 @@ namespace upp::Objects {
         {
 #define CASE(Name, Type) case Crc32(Name): return std::make_unique<Type>(Ar, *SchemaPtr, Ctx, IsCDO)
 
+            CASE("AnimBlueprintGeneratedClass", UAnimBlueprintGeneratedClass);
             CASE("BlueprintGeneratedClass", UBlueprintGeneratedClass);
             CASE("BodySetup", UBodySetup);
             CASE("CurveTable", UCurveTable);

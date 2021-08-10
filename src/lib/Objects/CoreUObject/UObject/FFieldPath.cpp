@@ -3,9 +3,12 @@
 namespace upp::Objects {
     FArchive& operator>>(FArchive& Ar, FFieldPath& Value)
     {
-        // https://github.com/EpicGames/UnrealEngine/blob/8bcc8f7e4836f6449a86052b3502f79f42c6dba3/Engine/Source/Runtime/CoreUObject/Private/UObject/FieldPath.cpp#L350
-        // ????
-        Ar >> Value.Names;
+        Ar >> Value.Path;
+        if (Value.Path.size() == 1 && Value.Path.front().IsNone()) {
+            Value.Path.clear();
+        }
+
+        Ar >> Value.ResolvedOwner;
 
         return Ar;
     }
