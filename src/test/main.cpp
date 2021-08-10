@@ -101,7 +101,7 @@ int main() {
     }
     {
         auto Start = std::chrono::steady_clock::now();
-        auto Pkg = Vfs.GetPackage("/FortniteGame/Content/Athena/Playlists/Score/Coins/Meshes/SM_Coin");
+        auto Pkg = Vfs.GetPackage("/FortniteGame/Content/Accessories/FORT_Backpacks/F_MED_Aztec_Backpack/Meshes/F_MED_Aztec_Backpack_Skeleton");
         auto End = std::chrono::steady_clock::now();
         printf("%.02f ms\n", (End - Start).count() / 1000000.);
     }

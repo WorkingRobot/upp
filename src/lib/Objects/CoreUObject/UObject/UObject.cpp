@@ -1,6 +1,7 @@
 #include "UObject.h"
 
 #include "../../../Vfs/Vfs.h"
+#include "../../Engine/Animation/USkeleton.h"
 #include "../../Engine/Engine/UBlueprintGeneratedClass.h"
 #include "../../Engine/Engine/UCurveTable.h"
 #include "../../Engine/Engine/UDataTable.h"
@@ -58,6 +59,7 @@ namespace upp::Objects {
             CASE("Function", UFunction);
             CASE("Level", ULevel);
             CASE("Model", UModel);
+            CASE("Skeleton", USkeleton);
             CASE("SoundWave", USoundWave);
             CASE("StaticMesh", UStaticMesh);
             CASE("Texture2D", UTexture2D);
