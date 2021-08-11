@@ -8,6 +8,7 @@
 #include "../../Engine/Engine/UDataTable.h"
 #include "../../Engine/Engine/ULevel.h"
 #include "../../Engine/Engine/UModel.h"
+#include "../../Engine/Engine/USkeletalMesh.h"
 #include "../../Engine/Engine/UStaticMesh.h"
 #include "../../Engine/Engine/UTexture2D.h"
 #include "../../Engine/Engine/UTextureCube.h"
@@ -61,6 +62,7 @@ namespace upp::Objects {
             CASE("Function", UFunction);
             CASE("Level", ULevel);
             CASE("Model", UModel);
+            CASE("SkeletalMesh", USkeletalMesh);
             CASE("Skeleton", USkeleton);
             CASE("SoundWave", USoundWave);
             CASE("StaticMesh", UStaticMesh);
