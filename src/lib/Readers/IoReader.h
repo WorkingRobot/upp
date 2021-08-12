@@ -54,5 +54,7 @@ namespace upp::Readers {
         std::vector<Objects::FIoChunkId> ChunkIds;
         std::vector<Objects::FIoStoreTocCompressedBlockEntry> CompressionBlocks;
         std::optional<Objects::FContainerHeader> Header;
+
+        std::unordered_map<std::reference_wrapper<const Objects::FIoChunkId>, uint32_t, std::hash<Objects::FIoChunkId>> ChunkIdLUT;
     };
 }

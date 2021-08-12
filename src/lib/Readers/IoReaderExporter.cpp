@@ -50,12 +50,11 @@ namespace upp::Readers {
         auto Ret = std::make_unique<UPackage>();
 
         FPackageId Id{ ChunkIds[AssetIdx].GetId() };
-        auto Itr = std::find(Header.PackageIds.begin(), Header.PackageIds.end(), Id);
-        if (Itr == Header.PackageIds.end()) {
+        auto Itr = Header.StoreEntries.find(Id);
+        if (Itr == Header.StoreEntries.end()) {
             return nullptr;
         }
-        auto Dist = std::distance(Header.PackageIds.begin(), Itr);
-        auto& Entry = Header.StoreEntries[Dist];
+        auto& Entry = Itr->second;
 
         auto AssetArPtr = OpenFile(AssetIdx);
         if (!AssetArPtr) {
@@ -154,12 +153,11 @@ namespace upp::Readers {
         auto Ret = std::make_unique<UPackage>();
 
         FPackageId Id{ ChunkIds[AssetIdx].GetId() };
-        auto Itr = std::find(Header.PackageIds.begin(), Header.PackageIds.end(), Id);
-        if (Itr == Header.PackageIds.end()) {
+        auto Itr = Header.StoreEntries.find(Id);
+        if (Itr == Header.StoreEntries.end()) {
             return nullptr;
         }
-        auto Dist = std::distance(Header.PackageIds.begin(), Itr);
-        auto& Entry = Header.StoreEntries[Dist];
+        auto& Entry = Itr->second;
 
         auto AssetArPtr = OpenFile(AssetIdx);
         if (!AssetArPtr) {

@@ -54,9 +54,9 @@ namespace upp::Readers {
 
     uint32_t IoReader::FindChunk(const Objects::FIoChunkId& Id) const
     {
-        auto Itr = std::find(ChunkIds.begin(), ChunkIds.end(), Id);
-        if (Itr != ChunkIds.end()) {
-            return std::distance(ChunkIds.begin(), Itr);
+        auto Itr = ChunkIdLUT.find(Id);
+        if (Itr != ChunkIdLUT.end()) {
+            return Itr->second;
         }
         return -1;
     }
@@ -127,6 +127,11 @@ namespace upp::Readers {
         PartitionSize = Toc.Header.PartitionSize;
         ContainerFlags = Toc.Header.ContainerFlags;
         ContainerId = Toc.Header.ContainerId;
+
+        ChunkIdLUT.reserve(ChunkIds.size());
+        for (uint32_t Idx = 0; Idx < ChunkIds.size(); ++Idx) {
+            ChunkIdLUT.emplace(ChunkIds[Idx], Idx);
+        }
 
         if ((uint8_t)Toc.Header.ContainerFlags & (uint8_t)EIoContainerFlags::Indexed && Toc.Header.DirectoryIndexSize != 0) {
             auto& Index = Toc.DirectoryIndex;

@@ -11,3 +11,14 @@ namespace upp::Objects {
         friend auto operator<=>(const FPackageId&, const FPackageId&) = default;
     };
 }
+
+namespace std {
+    template<>
+    struct hash<upp::Objects::FPackageId>
+    {
+        std::size_t operator()(upp::Objects::FPackageId const& s) const noexcept
+        {
+            return std::hash<uint64_t>{}(s.Id);
+        }
+    };
+}

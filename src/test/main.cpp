@@ -105,6 +105,24 @@ int main() {
         auto End = std::chrono::steady_clock::now();
         printf("%.02f ms\n", (End - Start).count() / 1000000.);
     }
+    {
+        auto Start = std::chrono::steady_clock::now();
+        auto Pkg = Vfs.GetPackage("/FortniteGame/Content/Athena/DrivableVehicles/Mech/TestMechVehicle");
+        auto End = std::chrono::steady_clock::now();
+        printf("%.02f ms\n", (End - Start).count() / 1000000.);
+    }
+    {
+        auto Start = std::chrono::steady_clock::now();
+        auto Pkg = Vfs.GetPackage("/FortniteGame/Content/Athena/UI/Customization/AthenaCustomizationSlotButton");
+        auto End = std::chrono::steady_clock::now();
+        printf("%.02f ms\n", (End - Start).count() / 1000000.);
+    }
+    {
+        auto Start = std::chrono::steady_clock::now();
+        auto Pkg = Vfs.GetPackage("/FortniteGame/Content/Athena/Athena_PlayerController");
+        auto End = std::chrono::steady_clock::now();
+        printf("%.02f ms\n", (End - Start).count() / 1000000.);
+    }
 
     // /Game/Athena/Items/Cosmetics/Dances/EID_Quantity_39X5D
     // /Game/Catalog/NewDisplayAssets/DAv2_EID_Quantity_39X5D

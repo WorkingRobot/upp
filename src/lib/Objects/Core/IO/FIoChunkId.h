@@ -26,3 +26,14 @@ namespace upp::Objects {
         friend auto operator<=>(const FIoChunkId&, const FIoChunkId&) = default;
     };
 }
+
+namespace std {
+    template<>
+    struct hash<upp::Objects::FIoChunkId>
+    {
+        std::size_t operator()(upp::Objects::FIoChunkId const& s) const noexcept
+        {
+            return _Hash_array_representation(s.Id, sizeof(s.Id));
+        }
+    };
+}

@@ -5,14 +5,15 @@
 #include "../UObject/FPackageId.h"
 #include "FPackageStoreEntry.h"
 
+#include <unordered_map>
+
 namespace upp::Objects {
     struct FContainerHeader {
         FIoContainerId ContainerId;
         uint32_t PackageCount;
         std::vector<uint8_t> Names;
         std::vector<uint8_t> NameHashes;
-        std::vector<FPackageId> PackageIds;
-        std::vector<FPackageStoreEntry> StoreEntries; //FPackageStoreEntry[PackageCount]
+        std::unordered_map<FPackageId, FPackageStoreEntry> StoreEntries;
         std::vector<FPackageId> ImportedPackages;
         std::vector<std::pair<std::string, std::vector<std::pair<FPackageId, FPackageId>>>> CulturePackageMap; // FCulturePackageMap
         std::vector<std::pair<FPackageId, FPackageId>> PackageRedirects;
