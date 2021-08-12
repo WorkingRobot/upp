@@ -3,7 +3,7 @@
 #include "BaseProperty.h"
 
 namespace upp::Objects {
-    MulticastDelegateProperty::BaseProperty(FArchive& Ar, const UPropertyTag& Tag, EReadType ReadType)
+    MulticastDelegateProperty::BaseProperty(FArchive& Ar, FSerializeCtx& Ctx, const UPropertyTag& Tag, EReadType ReadType)
     {
         switch (ReadType)
         {

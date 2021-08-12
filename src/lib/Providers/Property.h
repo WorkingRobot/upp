@@ -6,7 +6,6 @@ namespace upp::Providers {
     struct Property {
         Name& Name;
         uint16_t SchemaIdx;
-        uint8_t ArraySize;
         PropertyData Data;
     };
 }

@@ -37,13 +37,13 @@ namespace upp::Objects {
             FieldPathProperty
         > Data;
 
-        UPropertyData(FArchive& Ar, const UPropertyTag& Tag, EReadType ReadType) :
-            Data(Construct(Ar, Tag, ReadType))
+        UPropertyData(FArchive& Ar, FSerializeCtx& Ctx, const UPropertyTag& Tag, EReadType ReadType) :
+            Data(Construct(Ar, Ctx, Tag, ReadType))
         {
             
         }
-
+        
     private:
-        static decltype(Data) Construct(FArchive& Ar, const UPropertyTag& Tag, EReadType ReadType);
+        static decltype(Data) Construct(FArchive& Ar, FSerializeCtx& Ctx, const UPropertyTag& Tag, EReadType ReadType);
     };
 }

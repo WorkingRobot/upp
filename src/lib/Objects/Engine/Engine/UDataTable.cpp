@@ -30,7 +30,7 @@ namespace upp::Objects {
             FName RowName;
             Ar >> RowName;
 
-            RowMap.emplace_back(std::piecewise_construct, std::forward_as_tuple(RowName), std::forward_as_tuple(Ar, RowSchema));
+            RowMap.emplace_back(std::piecewise_construct, std::forward_as_tuple(RowName), std::forward_as_tuple(Ar, RowSchema, Ctx));
         }
     }
 }

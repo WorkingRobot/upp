@@ -14,7 +14,7 @@ namespace upp::Objects {
         const Providers::Schema& Schema;
         std::vector<std::pair<uint32_t, UProperty>> Properties;
 
-        UObject(FArchive& Ar, const Providers::Schema& Schema, bool IsCDO = true);
+        UObject(FArchive& Ar, const Providers::Schema& Schema, FSerializeCtx& Ctx, bool IsCDO = true);
 
         virtual ~UObject() = default;
 
@@ -30,8 +30,5 @@ namespace upp::Objects {
         }
 
         static std::unique_ptr<UObject> SerializeUnversioned(FArchive& Ar, const std::string& ClassName, FSerializeCtx& Ctx, bool IsCDO);
-
-    protected:
-        UObject(FArchive& Ar, const Providers::Schema& Schema, FSerializeCtx& Ctx, bool IsCDO) : UObject(Ar, Schema, IsCDO) { }
     };
 }

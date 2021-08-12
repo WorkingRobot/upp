@@ -42,6 +42,11 @@ namespace upp::Vfs {
 
     const std::string& GlobalData::GetName(const FMappedName& Name) const
     {
+#ifdef _DEBUG
+        if (!Name.IsGlobal()) {
+            _CrtDbgBreak();
+        }
+#endif
         return NameMap[Name.GetIndex()];
     }
 }

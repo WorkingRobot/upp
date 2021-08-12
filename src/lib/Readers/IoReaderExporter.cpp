@@ -38,6 +38,11 @@ namespace upp::Readers {
         }
     };
 
+    const std::string& GetName(const FMappedName& Name, const Vfs::GlobalData& GlobalData, const UPackage& Package)
+    {
+        return Name.IsGlobal() ? GlobalData.GetName(Name) : Package.NameMap[Name.GetIndex()];
+    }
+
     std::unique_ptr<UPackage> IoReader::ExportPackage(uint32_t AssetIdx, Vfs::Vfs& Vfs)
     {
         auto& Header = *GetHeader();
@@ -103,7 +108,7 @@ namespace upp::Readers {
                         ClassName = GlobalData.GetName(GlobalData.GetEntry(Export.ClassIndex).ObjectName);
                     }
                     else if (Export.ClassIndex.IsExport()) {
-                        ClassName = GlobalData.GetName(Ret->ExportMap[Export.ClassIndex.GetValue()].ObjectName);
+                        ClassName = GetName(Ret->ExportMap[Export.ClassIndex.GetValue()].ObjectName, GlobalData, *Ret);
                     }
                     else if (Export.ClassIndex.IsPackageImport()) {
                         for (int Idx = 0; Idx < Entry.ImportedPackagesCount; ++Idx) {
@@ -113,7 +118,7 @@ namespace upp::Readers {
                                 auto Pkg = Vfs.GetPackage(File);
                                 for (auto& PkgExport : Pkg->ExportMap) {
                                     if (PkgExport.GlobalImportIndex == Export.ClassIndex) {
-                                        ClassName = GlobalData.GetName(PkgExport.ObjectName);
+                                        ClassName = GetName(PkgExport.ObjectName, GlobalData, *Pkg);
                                         break;
                                     }
                                 }
@@ -123,11 +128,10 @@ namespace upp::Readers {
                             }
                         }
                     }
-#ifdef _DEBUG
+
                     if (ClassName.empty()) {
-                        _CrtDbgBreak();
+                        ClassName = "None";
                     }
-#endif
 
                     ExportAr.Seek(ExportOffset, ESeekDir::Beg);
                     Ret->Exports[Bundle.LocalExportIndex] = UObject::SerializeUnversioned(ExportAr, ClassName, Ctx, (uint32_t)Export.ObjectFlags & (uint32_t)EObjectFlags::RF_ClassDefaultObject);

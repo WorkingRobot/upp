@@ -8,6 +8,7 @@
 #include "../FMulticastScriptDelegate.h"
 #include "../FScriptDelegate.h"
 #include "../FScriptInterface.h"
+#include "../FSerializeCtx.h"
 #include "../FSoftObjectPath.h"
 #include "../FUniqueObjectGuid.h"
 
@@ -82,7 +83,7 @@ namespace upp::Objects {
             return &Value;
         }
 
-        BaseProperty(FArchive& Ar, const UPropertyTag& Tag, EReadType ReadType);
+        BaseProperty(FArchive& Ar, FSerializeCtx& Ctx, const UPropertyTag& Tag, EReadType ReadType);
 
     protected:
         BaseProperty() = default;

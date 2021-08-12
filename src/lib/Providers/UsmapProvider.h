@@ -13,5 +13,7 @@ namespace upp::Providers {
 
         struct LUT;
         void SerializePropData(Objects::FArchive& Ar, PropertyData& PropData, const LUT& LUT);
+
+        void ClonePropData(const PropertyData& Source, PropertyData& PropData, const LUT& LUT);
     };
 }

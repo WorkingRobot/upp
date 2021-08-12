@@ -1,11 +1,11 @@
 #include "UPropertyData.h"
 
 namespace upp::Objects {
-    decltype(UPropertyData::Data) UPropertyData::Construct(FArchive& Ar, const UPropertyTag& Tag, EReadType ReadType)
+    decltype(UPropertyData::Data) UPropertyData::Construct(FArchive& Ar, FSerializeCtx& Ctx, const UPropertyTag& Tag, EReadType ReadType)
     {
         switch (Tag.TagData.GetType())
         {
-#define CASE(Var) case Providers::EPropertyType::##Var##Property: return Var##Property(Ar, Tag, ReadType); break
+#define CASE(Var) case Providers::EPropertyType::##Var##Property: return Var##Property(Ar, Ctx, Tag, ReadType); break
 
             CASE(Byte);
             CASE(Bool);

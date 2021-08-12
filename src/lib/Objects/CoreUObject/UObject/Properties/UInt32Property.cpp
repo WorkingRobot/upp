@@ -3,7 +3,7 @@
 #include "BaseProperty.h"
 
 namespace upp::Objects {
-    UInt32Property::BaseProperty(FArchive& Ar, const UPropertyTag& Tag, EReadType ReadType) :
+    UInt32Property::BaseProperty(FArchive& Ar, FSerializeCtx& Ctx, const UPropertyTag& Tag, EReadType ReadType) :
         Value(0)
     {
         switch (ReadType)

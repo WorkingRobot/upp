@@ -4,7 +4,7 @@
 
 namespace upp::Objects {
     struct UProperty {
-        UProperty(FArchive& Ar, const Providers::Property& PropertyInfo, EReadType ReadType);
+        UProperty(FArchive& Ar, FSerializeCtx& Ctx, const Providers::Property& PropertyInfo, EReadType ReadType);
 
         ~UProperty();
 

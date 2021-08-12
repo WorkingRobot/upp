@@ -35,7 +35,7 @@ namespace upp::Providers {
     struct UsmapProvider::LUT {
         MiniLUT<uint32_t, Schema> Schemas;
         MiniLUT<uint32_t, Enum> Enums;
-        mutable std::vector<decltype(PropertyData().GetData().Struct)*> SchemasToMap;
+        mutable std::vector<const Schema**> SchemasToMap;
     };
 
     UsmapProvider::UsmapProvider(FArchive& Ar)
@@ -140,23 +140,26 @@ namespace upp::Providers {
                     Ar >> ArraySize;
                     Ar >> NameIdx;
 
-                    auto& Prop = Props.emplace_back(Names[NameIdx], SchemaIdx, ArraySize);
+                    auto& Prop = Props.emplace_back(Names[NameIdx], SchemaIdx);
                     SerializePropData(Ar, Prop.Data, LUT);
                     for (int Idx = 1; Idx < ArraySize; ++Idx) {
-                        ++Props.emplace_back(Props.back()).SchemaIdx;
+                        auto& NewProp = Props.emplace_back(Names[NameIdx], SchemaIdx + Idx);
+                        ClonePropData(Prop.Data, NewProp.Data, LUT);
                     }
                 }
 
-                auto& Schema = Schemas.emplace_back<false>(Names[SchemaNameIdx], Providers::Schema(Names[SchemaNameIdx], LUT.Schemas.Get(SchemaSuperNameIdx), PropCount, std::move(Props)));
+                auto& Schema = Schemas.emplace_back<false>(Names[SchemaNameIdx], Providers::Schema(Names[SchemaNameIdx], SchemaSuperNameIdx == -1 ? nullptr : (const Providers::Schema*)size_t(SchemaSuperNameIdx), PropCount, std::move(Props)));
+                if (SchemaSuperNameIdx != -1) {
+                    LUT.SchemasToMap.emplace_back(&Schema.SuperType);
+                }
+
                 LUT.Schemas.Add(SchemaNameIdx, Schema);
             }
         }
 
         // Map StructProperty data to schemas
-        {
-            for (auto& Struct : LUT.SchemasToMap) {
-                Struct->Schema = LUT.Schemas.Get(uint32_t((size_t)Struct->Schema));
-            }
+        for (auto& Struct : LUT.SchemasToMap) {
+            *Struct = LUT.Schemas.Get(uint32_t((size_t)*Struct));
         }
     }
 
@@ -183,7 +186,7 @@ namespace upp::Providers {
             Ar >> Idx;
             // The name pointer will get replaced with an actual schema pointer in the end
             Data.Struct.Schema = (const Schema*)size_t(Idx);
-            LUT.SchemasToMap.emplace_back(&Data.Struct);
+            LUT.SchemasToMap.emplace_back(&Data.Struct.Schema);
             break;
         }
         case EPropertyType::SetProperty:
@@ -198,6 +201,45 @@ namespace upp::Providers {
 
             SerializePropData(Ar, *Data.Map.InnerType, LUT);
             SerializePropData(Ar, *Data.Map.ValueType, LUT);
+            break;
+        default:
+            break;
+        }
+    }
+
+    void UsmapProvider::ClonePropData(const PropertyData& Source, PropertyData& PropData, const LUT& LUT)
+    {
+        auto& SourceData = Source.GetData();
+        auto& Data = PropData.GetData(Source.GetType());
+        switch (Source.GetType())
+        {
+        case EPropertyType::EnumProperty:
+        {
+            Data.Enum.InnerType = std::make_unique<PropertyData>();
+
+            ClonePropData(*SourceData.Enum.InnerType, *Data.Enum.InnerType, LUT);
+            Data.Enum.Enum = SourceData.Enum.Enum;
+            break;
+        }
+        case EPropertyType::StructProperty:
+        {
+            // The name pointer will get replaced with an actual schema pointer in the end
+            Data.Struct.Schema = SourceData.Struct.Schema;
+            LUT.SchemasToMap.emplace_back(&Data.Struct.Schema);
+            break;
+        }
+        case EPropertyType::SetProperty:
+        case EPropertyType::ArrayProperty:
+            Data.Array.InnerType = std::make_unique<PropertyData>();
+
+            ClonePropData(*SourceData.Array.InnerType, *Data.Array.InnerType, LUT);
+            break;
+        case EPropertyType::MapProperty:
+            Data.Map.InnerType = std::make_unique<PropertyData>();
+            Data.Map.ValueType = std::make_unique<PropertyData>();
+
+            ClonePropData(*SourceData.Map.InnerType, *Data.Map.InnerType, LUT);
+            ClonePropData(*SourceData.Map.ValueType, *Data.Map.ValueType, LUT);
             break;
         default:
             break;

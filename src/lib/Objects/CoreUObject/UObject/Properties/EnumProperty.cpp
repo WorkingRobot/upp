@@ -5,7 +5,7 @@
 #include "BaseProperty.h"
 
 namespace upp::Objects {
-    EnumProperty::BaseProperty(FArchive& Ar, const UPropertyTag& Tag, EReadType ReadType)
+    EnumProperty::BaseProperty(FArchive& Ar, FSerializeCtx& Ctx, const UPropertyTag& Tag, EReadType ReadType)
     {
         switch (ReadType)
         {
@@ -14,7 +14,7 @@ namespace upp::Objects {
             size_t EnumIdx;
             auto& InnerType = Tag.TagData.GetData().Enum.InnerType;
             if (InnerType) {
-                UPropertyData Data(Ar, *InnerType, EReadType::Normal);
+                UPropertyData Data(Ar, Ctx, *InnerType, EReadType::Normal);
 
                 std::visit([&EnumIdx](auto&& Data) {
                     using T = std::decay_t<decltype(Data)>;

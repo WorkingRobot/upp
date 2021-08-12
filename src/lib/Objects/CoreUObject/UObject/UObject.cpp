@@ -73,11 +73,11 @@ namespace upp::Objects {
             CASE("World", UWorld);
 
 #undef CASE
-        default: return std::unique_ptr<UObject>(new UObject(Ar, *SchemaPtr, IsCDO));
+        default: return std::unique_ptr<UObject>(new UObject(Ar, *SchemaPtr, Ctx, IsCDO));
         }
     }
 
-    UObject::UObject(FArchive& Ar, const Providers::Schema& Schema, bool IsCDO) :
+    UObject::UObject(FArchive& Ar, const Providers::Schema& Schema, FSerializeCtx& Ctx, bool IsCDO) :
         Schema(Schema)
     {
         FUnversionedHeader Header;
@@ -90,7 +90,7 @@ namespace upp::Objects {
             do {
                 auto PropInfo = GetSchemaProperty(Schema, Itr.GetSchemaIdx());
                 if (PropInfo) {
-                    Properties.emplace_back(std::piecewise_construct, std::forward_as_tuple(Itr.GetSchemaIdx()), std::forward_as_tuple(Ar, *PropInfo, Itr.IsNonZero() ? EReadType::Normal : EReadType::Zero));
+                    Properties.emplace_back(std::piecewise_construct, std::forward_as_tuple(Itr.GetSchemaIdx()), std::forward_as_tuple(Ar, Ctx, *PropInfo, Itr.IsNonZero() ? EReadType::Normal : EReadType::Zero));
                 }
                 // Could not get property info
                 else {

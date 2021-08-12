@@ -3,7 +3,7 @@
 namespace upp::Objects {
     FArchive& operator>>(FArchive& Ar, FBspNode& Value)
     {
-		Ar >> Value.Plane;;
+		Ar >> Value.Plane;
 		Ar >> Value.iVertPool;
 		Ar >> Value.iSurf;
 		Ar >> Value.iVertexIndex;
