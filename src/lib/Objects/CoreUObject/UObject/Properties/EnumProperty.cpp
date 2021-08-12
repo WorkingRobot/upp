@@ -33,7 +33,7 @@ namespace upp::Objects {
                 EnumIdx = Idx;
             }
             auto& Enum = *Tag.TagData.GetData().Enum.Enum;
-            Value = Enum.Names.size() > EnumIdx ? (std::string)Enum.Names[EnumIdx].get() : std::to_string(EnumIdx);
+            Value = std::string(Enum.Name) + "::" + (Enum.Names.size() > EnumIdx ? (std::string)Enum.Names[EnumIdx].get() : std::to_string(EnumIdx));
             break;
         }
         case EReadType::Array:

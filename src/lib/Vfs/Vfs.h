@@ -68,6 +68,10 @@ namespace upp::Vfs {
 
         std::unique_ptr<Objects::UPackage> GetPackage(const File& File);
 
+        std::unique_ptr<Objects::UPackage> GetPackageMinimal(const char* Path);
+
+        std::unique_ptr<Objects::UPackage> GetPackageMinimal(const File& File);
+
     private:
         Directory<> Root;
         GlobalData Global;

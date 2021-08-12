@@ -40,8 +40,8 @@ namespace upp::Objects {
                 friend FArchive& operator>>(FArchive& Ar, FDelegateProperty& Value);
             } Delegate;
             struct FEnumProperty {
-                std::unique_ptr<FProperty> UnderlyingProp;
                 FPackageIndex Enum;
+                std::unique_ptr<FProperty> UnderlyingProp;
 
                 friend FArchive& operator>>(FArchive& Ar, FEnumProperty& Value);
             } Enum;

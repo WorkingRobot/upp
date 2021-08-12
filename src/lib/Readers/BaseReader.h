@@ -32,6 +32,8 @@ namespace upp::Readers {
 
         virtual std::unique_ptr<Objects::UPackage> ExportPackage(uint32_t AssetIdx, Vfs::Vfs& Vfs) = 0;
 
+        virtual std::unique_ptr<Objects::UPackage> ExportPackageMinimal(uint32_t AssetIdx, Vfs::Vfs& Vfs) = 0;
+
         virtual void Append(Vfs::Vfs& Vfs, bool TranslatePaths = false) = 0;
 
     protected:

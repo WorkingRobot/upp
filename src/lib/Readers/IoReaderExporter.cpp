@@ -114,8 +114,7 @@ namespace upp::Readers {
                         for (int Idx = 0; Idx < Entry.ImportedPackagesCount; ++Idx) {
                             Vfs::File File;
                             if (Vfs.FindChunk(FIoChunkId(Header.ImportedPackages[Entry.ImportedPackagesIdx + Idx].Id, 0, EIoChunkType::ExportBundleData), File)) {
-                                // TODO: Possibly slim this down to allow "minimal" reads to not parse the package data (and only get the maps)
-                                auto Pkg = Vfs.GetPackage(File);
+                                auto Pkg = Vfs.GetPackageMinimal(File);
                                 for (auto& PkgExport : Pkg->ExportMap) {
                                     if (PkgExport.GlobalImportIndex == Export.ClassIndex) {
                                         ClassName = GetName(PkgExport.ObjectName, GlobalData, *Pkg);
@@ -144,6 +143,42 @@ namespace upp::Readers {
                 }
             }
         }
+
+        return Ret;
+    }
+
+    std::unique_ptr<Objects::UPackage> IoReader::ExportPackageMinimal(uint32_t AssetIdx, Vfs::Vfs& Vfs)
+    {
+        auto& Header = *GetHeader();
+        auto& GlobalData = Vfs.GetGlobalData();
+        auto Ret = std::make_unique<UPackage>();
+
+        FPackageId Id{ ChunkIds[AssetIdx].GetId() };
+        auto Itr = std::find(Header.PackageIds.begin(), Header.PackageIds.end(), Id);
+        if (Itr == Header.PackageIds.end()) {
+            return nullptr;
+        }
+        auto Dist = std::distance(Header.PackageIds.begin(), Itr);
+        auto& Entry = Header.StoreEntries[Dist];
+
+        auto AssetArPtr = OpenFile(AssetIdx);
+        if (!AssetArPtr) {
+            return nullptr;
+        }
+        FIoArchive& AssetAr = (FIoArchive&)*AssetArPtr;
+
+        // https://github.com/EpicGames/UnrealEngine/blob/5df54b7ef1714f28fb5da319c3e83d96f0bedf08/Engine/Source/Runtime/CoreUObject/Private/Serialization/AsyncLoading2.cpp#L3415
+        FPackageSummary Summary;
+        AssetAr >> Summary;
+
+        AssetAr.Seek(Summary.NameMapNamesOffset, ESeekDir::Beg);
+        Vfs::GlobalData::ReadNameMap(AssetAr, Summary.NameMapHashesSize, Ret->NameMap);
+
+        AssetAr.Seek(Summary.ImportMapOffset, ESeekDir::Beg);
+        AssetAr.ReadBuffer(Ret->ImportMap, (Summary.ExportMapOffset - Summary.ImportMapOffset) / sizeof(FPackageObjectIndex));
+
+        AssetAr.Seek(Summary.ExportMapOffset, ESeekDir::Beg);
+        AssetAr.ReadBuffer(Ret->ExportMap, Entry.ExportCount);
 
         return Ret;
     }

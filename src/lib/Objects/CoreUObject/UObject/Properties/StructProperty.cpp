@@ -2,6 +2,7 @@
 
 #include "../../../../Crc32.h"
 #include "../../../../Providers/Schema.h"
+#include "../../../Core/Math/FBox2D.h"
 #include "../../../Core/Math/FIntPoint.h"
 #include "../../../Core/Math/FLinearColor.h"
 #include "../../../Core/Math/FRotator.h"
@@ -36,6 +37,7 @@ namespace upp::Objects {
 #define CASE(Name, Type) case Crc32(Name): { auto& Data = Value.emplace<Type>(); if (ReadType != EReadType::Zero) { Ar >> Data; } break; }
 #define CASE_EX(Name, Type) case Crc32(Name): { auto& Data = Value.emplace<Type>(); if (ReadType != EReadType::Zero) { Data.Serialize(Ar, Ctx); } break; }
 
+            CASE("Box2D", FBox2D);
             CASE("ColorMaterialInput", FColorMaterialInput);
             CASE("FrameNumber", FFrameNumber);
             CASE("GameplayTagContainer", FGameplayTagContainer);
@@ -67,7 +69,6 @@ namespace upp::Objects {
 #define CASE(Name) case Crc32(Name): { printf("No parser written for " Name "!\n"); _CrtDbgBreak(); goto DefaultCase; }
 
             CASE("Box");
-            CASE("Box2D");
             CASE("Color");
             CASE("DateTime");
             CASE("ExpressionInput");

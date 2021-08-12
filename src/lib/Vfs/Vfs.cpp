@@ -118,4 +118,35 @@ namespace upp::Vfs {
 
         return (*ReaderItr)->ExportPackage(File.GetFileIdx(), *this);
     }
+
+    std::unique_ptr<Objects::UPackage> Vfs::GetPackageMinimal(const char* Path)
+    {
+        if (*Path == '/') {
+            Path++;
+        }
+
+        auto AssetFile = Root.TryGetFile((std::string(Path) + ".uasset").c_str());
+        if (!AssetFile) {
+            AssetFile = Root.TryGetFile((std::string(Path) + ".umap").c_str());
+            if (!AssetFile) {
+                return nullptr;
+            }
+        }
+
+        return GetPackageMinimal(*AssetFile);
+    }
+
+    std::unique_ptr<Objects::UPackage> Vfs::GetPackageMinimal(const File& File)
+    {
+        auto ReaderItr = std::find_if(Readers.begin(), Readers.end(),
+            [ReaderIdx = File.GetReaderIdx()](const std::unique_ptr<Readers::BaseReader>& Ptr) {
+            return Ptr->GetReaderIdx() == ReaderIdx;
+        }
+        );
+        if (ReaderItr == Readers.end()) {
+            return nullptr;
+        }
+
+        return (*ReaderItr)->ExportPackageMinimal(File.GetFileIdx(), *this);
+    }
 }

@@ -81,8 +81,8 @@ namespace upp::Objects {
             Data.Delegate.SignatureFunction = Other.Data.Delegate.SignatureFunction;
             break;
         case EFPropertyType::FEnumProperty:
-            Data.Enum.UnderlyingProp = std::make_unique<FProperty>(*Other.Data.Enum.UnderlyingProp);
             Data.Enum.Enum = Other.Data.Enum.Enum;
+            Data.Enum.UnderlyingProp = std::make_unique<FProperty>(*Other.Data.Enum.UnderlyingProp);
             break;
         case EFPropertyType::FFieldPathProperty:
             Data.FieldPath.PropertyClass = Other.Data.FieldPath.PropertyClass;
@@ -277,6 +277,7 @@ namespace upp::Objects {
 
     FArchive& operator>>(FArchive& Ar, Data::FClassProperty& Value)
     {
+        Ar >> Value.PropertyClass;
         Ar >> Value.MetaClass;
 
         return Ar;

@@ -101,7 +101,7 @@ int main() {
     }
     {
         auto Start = std::chrono::steady_clock::now();
-        auto Pkg = Vfs.GetPackage("/FortniteGame/Content/Athena/UI/Customization/AthenaCustomizationSlotButton");
+        auto Pkg = Vfs.GetPackage("/FortniteGame/Content/Athena/UI/FrontEnd/AthenaFrontend");
         auto End = std::chrono::steady_clock::now();
         printf("%.02f ms\n", (End - Start).count() / 1000000.);
     }
