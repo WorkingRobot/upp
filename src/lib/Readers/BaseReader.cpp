@@ -38,13 +38,27 @@ namespace upp::Readers {
         return -1;
     }
 
+    std::unique_ptr<Objects::FArchive> BaseReader::OpenFile(uint32_t FileIdx)
+    {
+        return nullptr;
+    }
+
+    std::unique_ptr<Objects::UPackage> BaseReader::ExportPackage(uint32_t AssetIdx, Vfs::Vfs& Vfs)
+    {
+        return nullptr;
+    }
+
+    std::unique_ptr<Objects::UPackage> BaseReader::ExportPackageMinimal(uint32_t AssetIdx, Vfs::Vfs& Vfs)
+    {
+        return nullptr;
+    }
+
     void BaseReader::SetError(Error NewError)
     {
         StoredError = NewError;
     }
 
     // https://github.com/gildor2/UEViewer/blob/eaba2837228f9fe39134616d7bff734acd314ffb/Unreal/FileSystem/FileSystemUtils.cpp
-
     bool BaseReader::ValidateMountPoint(std::string& MountPoint)
     {
         // Mount point must start with ../../..

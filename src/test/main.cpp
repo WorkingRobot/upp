@@ -1,4 +1,5 @@
 #include "../lib/Objects/Core/Serialization/FFileArchive.h"
+#include "../lib/Objects/RenderCore/FShaderCodeArchive.h"
 #include "../lib/Providers/UsmapProvider.h"
 #include "../lib/Readers/IoReader.h"
 #include "../lib/Readers/PakReader.h"
@@ -59,6 +60,13 @@ void Iterate(const std::string& Path, const upp::Vfs::Directory<upp::Vfs::CStrin
     }
 }
 
+void Bench(upp::Vfs::Vfs& Vfs, const char* Path) {
+    auto Start = std::chrono::steady_clock::now();
+    auto Pkg = Vfs.GetAsset<upp::Objects::FShaderCodeArchive>(Path);
+    auto End = std::chrono::steady_clock::now();
+    printf("%.02f ms\n", (End - Start).count() / 1000000.);
+}
+
 int main() {
     upp::Vfs::Vfs Vfs;
     upp::Readers::Error Error;
@@ -99,31 +107,12 @@ int main() {
         auto End = std::chrono::steady_clock::now();
         printf("%.02f ms\n", (End - Start).count() / 1000000.);
     }
-    {
-        auto Start = std::chrono::steady_clock::now();
-        auto Pkg = Vfs.GetPackage("/FortniteGame/Content/Athena/UI/FrontEnd/AthenaFrontend");
-        auto End = std::chrono::steady_clock::now();
-        printf("%.02f ms\n", (End - Start).count() / 1000000.);
-    }
-    {
-        auto Start = std::chrono::steady_clock::now();
-        auto Pkg = Vfs.GetPackage("/FortniteGame/Content/Athena/DrivableVehicles/Mech/TestMechVehicle");
-        auto End = std::chrono::steady_clock::now();
-        printf("%.02f ms\n", (End - Start).count() / 1000000.);
-    }
-    {
-        auto Start = std::chrono::steady_clock::now();
-        auto Pkg = Vfs.GetPackage("/FortniteGame/Content/Athena/UI/Customization/AthenaCustomizationSlotButton");
-        auto End = std::chrono::steady_clock::now();
-        printf("%.02f ms\n", (End - Start).count() / 1000000.);
-    }
-    {
-        auto Start = std::chrono::steady_clock::now();
-        auto Pkg = Vfs.GetPackage("/FortniteGame/Content/Athena/Athena_PlayerController");
-        auto End = std::chrono::steady_clock::now();
-        printf("%.02f ms\n", (End - Start).count() / 1000000.);
-    }
-
-    // /Game/Athena/Items/Cosmetics/Dances/EID_Quantity_39X5D
-    // /Game/Catalog/NewDisplayAssets/DAv2_EID_Quantity_39X5D
+    Bench(Vfs, "/FortniteGame/Content/ShaderArchive-FortniteGame_Chunk10-PCD3D_SM5.ushaderbytecode");
+    Bench(Vfs, "/FortniteGame/Content/ShaderArchive-FortniteGame_Chunk1005-PCD3D_ES31.ushaderbytecode");
+    Bench(Vfs, "/FortniteGame/Content/ShaderArchive-Global-PCD3D_ES31.ushaderbytecode");
+    Bench(Vfs, "/FortniteGame/Content/ShaderArchive-FortniteGame_Chunk10-PCD3D_ES31.ushaderbytecode");
+    Bench(Vfs, "/FortniteGame/Content/ShaderArchive-FortniteGame_Chunk1005-PCD3D_SM5.ushaderbytecode");
+    Bench(Vfs, "/FortniteGame/Content/ShaderArchive-FortniteGame_Chunk0-PCD3D_SM5.ushaderbytecode");
+    Bench(Vfs, "/FortniteGame/Content/ShaderArchive-Global-PCD3D_SM5.ushaderbytecode");
+    Bench(Vfs, "/FortniteGame/Content/ShaderArchive-FortniteGame_Chunk0-PCD3D_ES31.ushaderbytecode");
 }

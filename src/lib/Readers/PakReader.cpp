@@ -89,16 +89,6 @@ namespace upp::Readers {
         }
     }
 
-    std::unique_ptr<UPackage> PakReader::ExportPackage(uint32_t AssetIdx, Vfs::Vfs& Vfs)
-    {
-        return nullptr;
-    }
-
-    std::unique_ptr<Objects::UPackage> PakReader::ExportPackageMinimal(uint32_t AssetIdx, Vfs::Vfs& Vfs)
-    {
-        return nullptr;
-    }
-
     void PakReader::Append(Vfs::Vfs& Vfs, bool TranslatePaths)
     {
         if (HasError()) {

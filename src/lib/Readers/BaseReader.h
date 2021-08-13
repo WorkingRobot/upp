@@ -28,11 +28,11 @@ namespace upp::Readers {
 
         virtual uint32_t FindChunk(const Objects::FIoChunkId& Id) const;
 
-        virtual std::unique_ptr<Objects::FArchive> OpenFile(uint32_t FileIdx) = 0;
+        virtual std::unique_ptr<Objects::FArchive> OpenFile(uint32_t FileIdx);
 
-        virtual std::unique_ptr<Objects::UPackage> ExportPackage(uint32_t AssetIdx, Vfs::Vfs& Vfs) = 0;
+        virtual std::unique_ptr<Objects::UPackage> ExportPackage(uint32_t AssetIdx, Vfs::Vfs& Vfs);
 
-        virtual std::unique_ptr<Objects::UPackage> ExportPackageMinimal(uint32_t AssetIdx, Vfs::Vfs& Vfs) = 0;
+        virtual std::unique_ptr<Objects::UPackage> ExportPackageMinimal(uint32_t AssetIdx, Vfs::Vfs& Vfs);
 
         virtual void Append(Vfs::Vfs& Vfs, bool TranslatePaths = false) = 0;
 

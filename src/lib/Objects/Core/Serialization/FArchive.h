@@ -144,7 +144,14 @@ namespace upp::Objects {
             return *this;
         }
 
-        template<class T, uint32_t Size>
+        template<class T, uint32_t Size, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
+        FArchive& operator>>(T(&Val)[Size]) {
+            Read((char*)Val, Size * sizeof(T));
+
+            return *this;
+        }
+
+        template<class T, uint32_t Size, std::enable_if_t<!std::is_arithmetic_v<T>, bool> = true>
         FArchive& operator>>(T(&Val)[Size]) {
             for (uint32_t i = 0; i < Size; ++i) {
                 *this >> Val[i];

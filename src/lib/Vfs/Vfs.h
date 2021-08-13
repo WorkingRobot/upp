@@ -72,6 +72,32 @@ namespace upp::Vfs {
 
         std::unique_ptr<Objects::UPackage> GetPackageMinimal(const File& File);
 
+        template<class T>
+        std::unique_ptr<T> GetAsset(const char* Path)
+        {
+            if (*Path == '/') {
+                Path++;
+            }
+
+            auto File = Root.TryGetFile(Path);
+            if (!File) {
+                return nullptr;
+            }
+
+            return GetAsset<T>(*File);
+        }
+
+        template<class T>
+        std::unique_ptr<T> GetAsset(const File& File)
+        {
+            auto Ar = GetFile(File);
+            if (!Ar) {
+                return nullptr;
+            }
+
+            return std::make_unique<T>(*Ar);
+        }
+
     private:
         Directory<> Root;
         GlobalData Global;
