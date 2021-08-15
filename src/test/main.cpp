@@ -1,5 +1,5 @@
 #include "../lib/Objects/Core/Serialization/FFileArchive.h"
-#include "../lib/Objects/RenderCore/FShaderCodeArchive.h"
+#include "../lib/Objects/RHI/FPipelineFileCache.h"
 #include "../lib/Providers/UsmapProvider.h"
 #include "../lib/Readers/IoReader.h"
 #include "../lib/Readers/PakReader.h"
@@ -62,7 +62,7 @@ void Iterate(const std::string& Path, const upp::Vfs::Directory<upp::Vfs::CStrin
 
 void Bench(upp::Vfs::Vfs& Vfs, const char* Path) {
     auto Start = std::chrono::steady_clock::now();
-    auto Pkg = Vfs.GetAsset<upp::Objects::FShaderCodeArchive>(Path);
+    auto Pkg = Vfs.GetAsset<upp::Objects::FPipelineFileCache>(Path);
     auto End = std::chrono::steady_clock::now();
     printf("%.02f ms\n", (End - Start).count() / 1000000.);
 }
@@ -107,12 +107,6 @@ int main() {
         auto End = std::chrono::steady_clock::now();
         printf("%.02f ms\n", (End - Start).count() / 1000000.);
     }
-    Bench(Vfs, "/FortniteGame/Content/ShaderArchive-FortniteGame_Chunk10-PCD3D_SM5.ushaderbytecode");
-    Bench(Vfs, "/FortniteGame/Content/ShaderArchive-FortniteGame_Chunk1005-PCD3D_ES31.ushaderbytecode");
-    Bench(Vfs, "/FortniteGame/Content/ShaderArchive-Global-PCD3D_ES31.ushaderbytecode");
-    Bench(Vfs, "/FortniteGame/Content/ShaderArchive-FortniteGame_Chunk10-PCD3D_ES31.ushaderbytecode");
-    Bench(Vfs, "/FortniteGame/Content/ShaderArchive-FortniteGame_Chunk1005-PCD3D_SM5.ushaderbytecode");
-    Bench(Vfs, "/FortniteGame/Content/ShaderArchive-FortniteGame_Chunk0-PCD3D_SM5.ushaderbytecode");
-    Bench(Vfs, "/FortniteGame/Content/ShaderArchive-Global-PCD3D_SM5.ushaderbytecode");
-    Bench(Vfs, "/FortniteGame/Content/ShaderArchive-FortniteGame_Chunk0-PCD3D_ES31.ushaderbytecode");
+    Bench(Vfs, "/FortniteGame/Content/PipelineCaches/Windows/FortniteGame_PCD3D_ES31.stable.upipelinecache");
+    Bench(Vfs, "/FortniteGame/Content/PipelineCaches/Windows/FortniteGame_PCD3D_SM5.stable.upipelinecache");
 }

@@ -3,7 +3,7 @@
 #include <string>
 
 namespace upp::Objects {
-    enum class EPixelFormat : uint8_t {
+    enum class EPixelFormat : uint32_t {
         PF_Unknown = 0,
         PF_A32B32G32R32F = 1,
         PF_B8G8R8A8 = 2,
